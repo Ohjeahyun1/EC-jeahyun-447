@@ -25,7 +25,7 @@ int main(void) {
 	int state = 0;                           //state initalization
 	// Inifinite Loop ----------------------------------------------------------
 	while(1){
-		
+		//output of 4 LEDs according to state
 		multled(state);
 		if( GPIO_read(GPIOC,BUTTON_PIN) == 0){ //when button pressed
 				state++;                           //state update

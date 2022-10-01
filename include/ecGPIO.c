@@ -94,7 +94,7 @@ void multled(int state){
                     {0,0,1,0},          //state two
                     {0,0,0,1}           //state three                   
   };  
-	//4 LEDS outpus
+	//output of 4 LEDS
 	    GPIO_write(GPIOA,LED_PIN,muled[state][0]);
 			GPIO_write(GPIOA,6,muled[state][1]);
 			GPIO_write(GPIOA,7,muled[state][2]);
