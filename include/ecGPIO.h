@@ -2,7 +2,7 @@
 @ Embedded Controller by Young-Keun Kim - Handong Global University
 Author           : Oh jeahyun
 Created          : 05-03-2021
-Modified         : 10-01-2022
+Modified         : 10-07-2022
 Language/ver     : C++ in Keil uVision
 
 Description      : Distributed to Students for LAB_GPIO

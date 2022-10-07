@@ -23,11 +23,11 @@ void GPIO_init(GPIO_TypeDef *Port, int pin, int mode){
 	
 	//[TO-DO] YOUR CODE GOES HERE
 	// Make it for GPIOB, GPIOD..GPIOH
- /* if (Port == GPIOD)
+  if (Port == GPIOD)
 		RCC_GPIOD_enable();
-	 if (Port == GPIOE)
+	if (Port == GPIOE)
 		RCC_GPIOE_enable();
-	  if (Port == GPIOF)
+	/*  if (Port == GPIOF)
 		RCC_GPIOF_enable();
 		 if (Port == GPIOG)
 		RCC_GPIOG_enable();
@@ -100,7 +100,7 @@ void multled(int state){
 			GPIO_write(GPIOA,7,muled[state][2]);
 			GPIO_write(GPIOB,6,muled[state][3]);
 }
-
+// When button pressed Output 7segment(0~9) in order
 void sevenseg_decode(int number){
 	int seven[11][8] ={
 		//row- number , col - a,b,c,d....DP
@@ -128,19 +128,19 @@ void sevenseg_decode(int number){
 	GPIO_write(GPIOB,6,seven[number][7]);        // dp
 }
 
-
+// 7segment init,otype,pupdr,ospeed
 void sevenseg_init(void){
-	GPIO_init(GPIOA, 8, OUTPUT);       //a
+	GPIO_init(GPIOA, 8, OUTPUT);      //a
 	GPIO_init(GPIOB, 10,OUTPUT);      //b
-	GPIO_init(GPIOA, 7, OUTPUT);       //c
-	GPIO_init(GPIOA, 6, OUTPUT);       //d
-	GPIO_init(GPIOA, 5, OUTPUT);       //e
-  GPIO_init(GPIOA, 9, OUTPUT);       //f
-	GPIO_init(GPIOC, 7, OUTPUT);       //g
-	GPIO_init(GPIOB, 6, OUTPUT);       //DP
+	GPIO_init(GPIOA, 7, OUTPUT);      //c
+	GPIO_init(GPIOA, 6, OUTPUT);      //d
+	GPIO_init(GPIOA, 5, OUTPUT);      //e
+  GPIO_init(GPIOA, 9, OUTPUT);      //f
+	GPIO_init(GPIOC, 7, OUTPUT);      //g
+	GPIO_init(GPIOB, 6, OUTPUT);      //DP
 	
 	GPIO_pupdr(GPIOA, 8, EC_NOPUPD);  // GPIOA 5 pupdr -> NO pull up Pull down
-	GPIO_pupdr(GPIOB, 10,EC_NOPUPD); // GPIOB 10 pupdr -> NO pull up Pull down
+	GPIO_pupdr(GPIOB, 10,EC_NOPUPD);  // GPIOB 10 pupdr -> NO pull up Pull down
 	GPIO_pupdr(GPIOA, 7, EC_NOPUPD);  // GPIOA 7 pupdr -> NO pull up Pull down
 	GPIO_pupdr(GPIOA, 6, EC_NOPUPD);  // GPIOA 6 pupdr -> NO pull up Pull down
 	GPIO_pupdr(GPIOA, 5, EC_NOPUPD);  // GPIOA 5 pupdr -> NO pull up Pull down
@@ -149,7 +149,7 @@ void sevenseg_init(void){
 	GPIO_pupdr(GPIOB, 6, EC_NOPUPD);  // GPIOB 6 pupdr -> NO pull up Pull down
 	
 	GPIO_otype(GPIOA, 8, PP);         // GPIOA 5 otype -> push pull
-	GPIO_otype(GPIOB, 10,PP);        // GPIOB 10 otype -> push pull
+	GPIO_otype(GPIOB, 10,PP);         // GPIOB 10 otype -> push pull
 	GPIO_otype(GPIOA, 7, PP);         // GPIOA 7 otype -> push pull
 	GPIO_otype(GPIOA, 6, PP);         // GPIOA 6 otype -> push pull
 	GPIO_otype(GPIOA, 5, PP);         // GPIOA 5 otype -> push pull
