@@ -117,7 +117,7 @@ void sevenseg_decode(int number){
                     {0,0,0,1,1,0,0,1},          //nine
                     {1,1,1,1,1,1,1,0}           //dot
   };
-					
+	//outputs 7segment LEDs				
 	GPIO_write(GPIOA,8,seven[number][0]);        // a
 	GPIO_write(GPIOB,10,seven[number][1]);       // b
 	GPIO_write(GPIOA,7,seven[number][2]);        // c
