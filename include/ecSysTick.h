@@ -15,7 +15,8 @@ void SysTick_counter();
 void delay_ms(uint32_t msec);
 void SysTick_reset(void);
 uint32_t SysTick_val(void);
-
+void buttonpushed(void);
+	 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

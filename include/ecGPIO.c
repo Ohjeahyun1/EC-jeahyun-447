@@ -167,3 +167,65 @@ void sevenseg_init(void){
 	GPIO_ospeed(GPIOB,6,SMED);        // GPIOB 6 ospeed -> Medium speed
 	
 }
+//4LEDS init,output,Pull-up,medium speed,Push pull
+void LED_init(void){
+	GPIO_init(GPIOA, LED_PIN, OUTPUT);    // calls RCC_GPIOA_enable()	and LED pin mode -> output     
+	GPIO_init(GPIOA, 6, OUTPUT);          // calls RCC_GPIOA_enable()	and 6 pin mode -> output
+	GPIO_init(GPIOA, 7, OUTPUT);          // calls RCC_GPIOA_enable()	and 7 pin mode -> output
+	GPIO_init(GPIOB, 6, OUTPUT);          // calls RCC_GPIOB_enable() and 6 pin mode -> output
+  
+	GPIO_pupdr(GPIOA, LED_PIN, EC_PU);    // GPIOA pin LED pin pupdr -> pull up
+	GPIO_pupdr(GPIOA, 6, EC_PU);          // GPIOA pin 6 pupdr -> pull up
+	GPIO_pupdr(GPIOA, 7, EC_PU);          // GPIOA pin 7 pupdr -> pull up
+	GPIO_pupdr(GPIOB, 6, EC_PU);          // GPIOB pin 6 pupdr -> pull up
+	 
+	GPIO_otype(GPIOA, LED_PIN, PP);       // GPIOA LED pin otype -> push-pull
+	GPIO_otype(GPIOA, 6, PP);             // GPIOA 6 pin otype -> push-pull
+	GPIO_otype(GPIOA, 7, PP);             // GPIOA 7 pin otype -> push-pull
+	GPIO_otype(GPIOB, 6, PP);             // GPIOB 6 pin otype -> push-pull
+	
+	GPIO_ospeed(GPIOA,LED_PIN,SMED);      // GPIOA LED_PIN pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,6,SMED);            // GPIOA 6 pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,7,SMED);            // GPIOA 7 pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOB,6,SMED);            // GPIOB 6 pin ospeed -> Medium speed
+	
+}
+
+void LED_toggle(void){
+		(GPIOA->ODR) ^= (1UL << LED_PIN); 
+}
+//4LEDS output with states
+void LEDs_toggle(int state){
+	// 4 LEDs HIGH,LOW state definition
+	int muled[4][4] ={
+		    //row - led1,led2,led3,led4, col- state 
+                 //led1,led2,led3,led4		
+	                  {1,0,0,0},          //state zero
+                    {0,1,0,0},          //state one
+                    {0,0,1,0},          //state two
+                    {0,0,0,1}           //state three                   
+  };  
+	    //output of 4 LEDS
+	    GPIO_write(GPIOA,LED_PIN,muled[state][0]);
+			GPIO_write(GPIOA,6,muled[state][1]);
+			GPIO_write(GPIOA,7,muled[state][2]);
+			GPIO_write(GPIOB,6,muled[state][3]);
+}
+
+
+/*int LEDS_READ(void){
+	int state;
+	if( (GPIO_read(GPIOA,LED_PIN)& GPIO_read(GPIOA,6)&GPIO_read(GPIOA,7)&GPIO_read(GPIOB,6)) == 0){
+		state = 0;
+	}else if(GPIO_read(GPIOA,LED_PIN) == 1){
+		state = 1;
+	}else if(GPIO_read(GPIOA,6) == 1){
+		state = 2;
+	}else if(GPIO_read(GPIOA,7) == 1){
+		state = 3;
+	}else if(GPIO_read(GPIOB,6) == 1){
+		state = 0;
+	}
+	return state;
+	
+}	*/

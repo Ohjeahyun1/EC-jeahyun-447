@@ -60,9 +60,13 @@ int button_pressed(GPIO_TypeDef* Port, int buttonpin);
 void multled(int state);	
 void sevenseg_init(void);
 void sevenseg_decode(int number);
+void LED_init(void);
+void LED_toggle(void);
+void LEDs_toggle(int state);
+//void LED_toggle(int state);
+//int LEDS_READ(void);
 
 
- 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
