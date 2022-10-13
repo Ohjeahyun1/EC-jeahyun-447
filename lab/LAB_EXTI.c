@@ -1,7 +1,7 @@
 /**
 ******************************************************************************
 * @author	Oh jeahyun
-* @Mod		date 2022/10/12
+* @Mod		date 2022/10/13
 * @brief	Embedded Controller:  LAB_EXTI
 *					 - Toggle multiple LEDs by Button B1 pressing
 * 

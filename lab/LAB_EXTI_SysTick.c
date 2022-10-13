@@ -1,7 +1,7 @@
 /**
 ******************************************************************************
-* @author  SSSLAB
-* @Mod		 2021-8-30 by YKKIM  	
+* @author  Oh jeahyun
+* @Mod		 2022-10-13   	
 * @brief   Embedded Controller:  LAB Systick&EXTI with API
 *					 - 7 segment
 * 
