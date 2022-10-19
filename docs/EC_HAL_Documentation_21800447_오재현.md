@@ -741,5 +741,302 @@ clear_UIF(TIM_TypeDef *TIMx)
 
 * **TIMER:**  TIM1~5,9,10,11
 
+## LAB Main code
+
+### GPIO_DIO_LED
+
+Pressed button pin -> LED toggle
+
+```c
+#include "stm32f4xx.h"
+#include "ecRCC.h"
+#include "ecGPIO.h"
+#include "ecSysTick.h"
+
+
+//define the led pin number and button pin number
+#define LED_PIN 	5
+#define BUTTON_PIN 13
+
+void setup(void);
+	
+int main(void) { 
+	// Initialiization --------------------------------------------------------
+	setup();
+	// Inifinite Loop ----------------------------------------------------------
+	//when button pressed LED toggle
+	while(1){
+	if( GPIO_read(GPIOC,BUTTON_PIN) == 0){ //when button pressed
+		bittoggle(GPIOA,LED_PIN);	           // bit toggle function
+	}  
+	  delay_ms(50);                        //delay for debouncing
+	} 
+}
+
+```
+
+### LAB_GPIO_DIO_multiLED
+
+Pressed button pin  -> 4LEDS toggle
+
+```c
+#include "stm32f4xx.h"
+#include "ecRCC.h"
+#include "ecGPIO.h"
+#include "ecSysTick.h"
+
+//define the led pin number and button pin number
+#define LED_PIN 	5
+#define BUTTON_PIN 13
+
+void setup(void);
+
+int main(void) { 
+	// Initialiization --------------------------------------------------------
+	setup();
+	int state = 0;                           //state initalization
+	// Inifinite Loop ----------------------------------------------------------
+	while(1){
+		//output of 4 LEDs according to state
+		multled(state);
+		if( GPIO_read(GPIOC,BUTTON_PIN) == 0){ //when button pressed
+				state++;                           //state update
+			if(state == 4){                      //There are only 0,1,2,3 states 
+			state =0;                            //state reset
+		   }
+		}
+		delay_ms(50);                          //delay for debouncing
+	}
+}
+
+
+// Initialiization 
+void setup(void)
+{
+	RCC_HSI_init();
+	SysTick_init();                       // for delay
+	GPIO_init(GPIOC, BUTTON_PIN, INPUT);  // calls RCC_GPIOC_enable() and button pin mode -> input
+	GPIO_init(GPIOA, LED_PIN, OUTPUT);    // calls RCC_GPIOA_enable()	and LED pin mode -> output
+	GPIO_init(GPIOA, 6, OUTPUT);          // calls RCC_GPIOA_enable()	and 6 pin mode -> output
+	GPIO_init(GPIOA, 7, OUTPUT);          // calls RCC_GPIOA_enable()	and 7 pin mode -> output
+	GPIO_init(GPIOB, 6, OUTPUT);          // calls RCC_GPIOB_enable() and 6 pin mode -> output
+  
+	GPIO_pupdr(GPIOC, BUTTON_PIN, EC_PU); // GPIOC button pin pupdr -> pull up
+	GPIO_pupdr(GPIOA, LED_PIN, EC_PU);    // GPIOA LED pin pupdr -> pull up
+	GPIO_pupdr(GPIOA, 6, EC_PU);          // GPIOA pin 6 pupdr -> pull up
+	GPIO_pupdr(GPIOA, 7, EC_PU);          // GPIOA pin 7 pupdr -> pull up
+	GPIO_pupdr(GPIOB, 6, EC_PU);          // GPIOB pin 6 pupdr -> pull up
+	 
+	GPIO_otype(GPIOA, LED_PIN, PP);       // GPIOA LED pin otype -> push-pull
+	GPIO_otype(GPIOA, 6, PP);             // GPIOA 6 pin otype -> push-pull
+	GPIO_otype(GPIOA, 7, PP);             // GPIOA 7 pin otype -> push-pull
+	GPIO_otype(GPIOB, 6, PP);             // GPIOB 6 pin otype -> push-pull
+	
+	GPIO_ospeed(GPIOA,LED_PIN,SMED);      // GPIOA LED pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,6,SMED);            // GPIOA 6 pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,7,SMED);            // GPIOA 7 pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOB,6,SMED);            // GPIOB 6 pin ospeed -> Medium speed
+}
+```
+
+### LAB_GPIO_7segment
+
+Pressed button pin -> 7segment update (0~9)
+
+```c
+#include "stm32f4xx.h"
+#include "ecRCC.h"
+#include "ecGPIO.h"
+#include "ecSysTick.h"
+
+//define the led pin number and button pin number
+#define LED_PIN 	5
+#define BUTTON_PIN 13
+
+void setup(void);
+
+
+int main(void) { 
+	// Initialiization --------------------------------------------------------
+	setup();
+	unsigned int cnt = 0;
+	// Inifinite Loop ----------------------------------------------------------
+	while(1){
+		//sevensegment output
+		sevenseg_decode(cnt % 10);                     //not to make over 10
+		if(GPIO_read(GPIOC, BUTTON_PIN) == 0) cnt++;   //if button pressed 7segment output up(0~9)
+		if (cnt > 9) cnt = 0;                          //over 10 -> 0
+		delay_ms(50);                                  //delay for debouncing
+	}
+}
+
+
+// Initialiization 
+void setup(void)
+{
+	RCC_HSI_init();	
+	SysTick_init();
+	GPIO_init(GPIOC, BUTTON_PIN, INPUT);  // calls RCC_GPIOC_enable() and button pin mode -> input
+	GPIO_pupdr(GPIOC, BUTTON_PIN, EC_PU); // GPIOC button pin pupdr -> pull up
+	sevenseg_init();	                    // 7segment init,otype,ospeed,pupdr   
+}
+```
+
+### LAB_EXTI
+
+Pressed button pin -> 4LED toggle using EXTI interrupt
+
+```c
+#include "stm32f4xx.h"
+#include "ecRCC.h"
+#include "ecGPIO.h"
+#include "ecEXTI.h"
+
+//define the led pin number and button pin number
+#define LED_PIN 	5
+#define BUTTON_PIN 13
+
+void setup(void);
+void EXTI15_10_IRQHandler(void);
+int state = 0;                     //state lnit
+
+
+int main(void) { 
+	// Initialiization --------------------------------------------------------
+	setup();
+	// Inifinite Loop ----------------------------------------------------------
+	while(1){}
+}
+
+// button pressed LEDS toggle
+void EXTI15_10_IRQHandler(void) {  
+	if (is_pending_EXTI(BUTTON_PIN)){ //when button pressed
+		LEDs_toggle(state);             //LEDs toggle with state
+		state++;                        //state update
+		if(state > 3) state=0;          //if state over 3 -> state clear
+		clear_pending_EXTI(BUTTON_PIN); // cleared by writing '1'
+	}
+}
+// Initialiization 
+void setup(void)
+{
+	RCC_HSI_init();
+	LED_init();                           //4LEDS init,output,Pull-up,medium speed,Push pull
+	GPIO_init(GPIOC, BUTTON_PIN, INPUT);  // calls RCC_GPIOC_enable() and button pin mode -> input
+	GPIO_pupdr(GPIOC, BUTTON_PIN, EC_PU); // GPIOC button pin pupdr -> pull up
+	EXTI_init(GPIOC,BUTTON_PIN,FALL,0);   //EXTI button PIN -> trigger type(falling),propriority(0)
+}
+```
+
+### GPIO_DIO_LED
+
+Using SysTick tick(1ms) -> 1초마다 7segment update(0~9)
+
+Pressed button pin -> 7segment reset(0)
+
+``` c
+#include "stm32f411xe.h"
+#include "ecGPIO.h"
+#include "ecRCC.h"
+#include "ecSysTick.h"
+#include "ecEXTI.h"
+
+//define the led pin number and button pin number
+#define LED_PIN 	5
+#define BUTTON_PIN 13
+
+void setup(void);
+void EXTI15_10_IRQHandler(void);
+int count = 0;                //count lnit      
+
+
+int main(void) { 
+	// Initialiization --------------------------------------------------------
+		setup();
+	
+	// Inifinite Loop ----------------------------------------------------------
+	while(1){
+		//output sevensegment  
+		sevenseg_decode(count % 10);        //not to make over 10
+		delay_ms(1000);                     //delay
+		count++;                            //count updates
+		if (count > 9) count =0;            //count over 10 -> 0
+		SysTick_reset();                    //SysTick->VAL = 0
+	}
+}
+//when button pressed seven segment display 0
+void EXTI15_10_IRQHandler(void) {  
+	if (is_pending_EXTI(BUTTON_PIN)){ // when button pressed
+		count=9;                        // main count -> 0 7segment display 0
+		clear_pending_EXTI(BUTTON_PIN); // cleared by writing '1'
+	}
+}
+
+
+void setup(void)
+{
+	RCC_PLL_init();
+	SysTick_init();                       // SysTick initialization
+	EXTI_init(GPIOC,BUTTON_PIN,FALL,0);   // EXTI button PIN -> trigger type(falling),propriority(0)
+	GPIO_init(GPIOC, BUTTON_PIN, INPUT);  // calls RCC_GPIOC_enable() and button pin mode -> input
+	GPIO_pupdr(GPIOC, BUTTON_PIN, EC_PU); // GPIOC button pin pupdr -> pull up
+	sevenseg_init();	                    // 7segment init,otype,ospeed,pupdr   
+}
+```
+
+### TU_TIMER_Interrupt
+
+Using TIMER interrupt(1ms) -> 1s LED toggle
+
+```c
+#include "stm32f411xe.h"
+#include "ecGPIO.h"
+#include "ecRCC.h"
+#include "ecTIM.h"
+
+uint32_t count=0;
+uint32_t count1=0;
+#define LED_PIN 	5
+
+	
+void setup(void);
+
+int main(void) { 
+	// Initialiization --------------------------------------------------------
+	setup();
+	// Inifinite Loop ----------------------------------------------------------
+	while(1){}
+} 
+
+// Initialiization 
+void setup(void)
+{	
+	RCC_PLL_init();                       // System Clock = 84MHz
+	//RCC_PLL_HSE_init();
+	GPIO_init(GPIOA, LED_PIN, OUTPUT);    // calls RCC_GPIOA_enable()	
+  GPIO_init(GPIOA,6,OUTPUT);
+	TIM_INT_init(TIM2,1);
+}
+
+void TIM2_IRQHandler(void){
+		//Create the code to toggle LED by 1000ms
+	if(is_UIF(TIM2)){	
+	count++;
+		count1++;
+		if(count >1000){
+			LED_toggle();
+			count = 0;
+		}
+		//if(count1 >2000){
+		//	bittoggle(GPIOA,6);
+		//	count1 = 0;
+	//	}
+		clear_UIF(TIM2);    // clear by writing 0
+	}
+}
+```
+
+
+
 
 
