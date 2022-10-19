@@ -7,7 +7,7 @@ description: EC_HAL API
 
 Documentation for HAL functions
 
-Written by:   오재현
+Written by:   오재현(21800447)
 
 Course:  임베디드컨트롤러
 
