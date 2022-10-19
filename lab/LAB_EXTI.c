@@ -1,7 +1,7 @@
 /**
 ******************************************************************************
 * @author	Oh jeahyun
-* @Mod		date 2022/10/13
+* @Mod		date 2022/10/19
 * @brief	Embedded Controller:  LAB_EXTI
 *					 - Toggle multiple LEDs by Button B1 pressing
 * 
@@ -12,7 +12,6 @@
 #include "ecRCC.h"
 #include "ecGPIO.h"
 #include "ecEXTI.h"
-#include "ecSysTick.h"
 
 //define the led pin number and button pin number
 #define LED_PIN 	5
@@ -44,8 +43,8 @@ void setup(void)
 {
 	RCC_HSI_init();
 	LED_init();                           //4LEDS init,output,Pull-up,medium speed,Push pull
-	EXTI_init(GPIOC,BUTTON_PIN,FALL,0);   //EXTI button PIN -> trigger type(falling),propriority(0)
 	GPIO_init(GPIOC, BUTTON_PIN, INPUT);  // calls RCC_GPIOC_enable() and button pin mode -> input
 	GPIO_pupdr(GPIOC, BUTTON_PIN, EC_PU); // GPIOC button pin pupdr -> pull up
+	EXTI_init(GPIOC,BUTTON_PIN,FALL,0);   //EXTI button PIN -> trigger type(falling),propriority(0)
 }
 

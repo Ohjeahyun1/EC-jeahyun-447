@@ -2,7 +2,7 @@
 @ Embedded Controller by Young-Keun Kim - Handong Global University
 Author           : Oh jeahyun
 Created          : 05-03-2021
-Modified         : 10-07-2022
+Modified         : 10-19-2022
 Language/ver     : C++ in Keil uVision
 
 Description      : Distributed to Students for LAB_GPIO
@@ -21,27 +21,29 @@ Description      : Distributed to Students for LAB_GPIO
 #define AF     0x02
 #define ANALOG 0x03
 
+// IDR & ODR
 #define HIGH 1
 #define LOW  0
 
+// PIN
 #define LED_PIN 	5
 #define BUTTON_PIN 13
 
-//OSPEED Low speed(00), Medium speed(01), Fast speed(10), High speed(11)
-#define SLOW 0x00
-#define SMED 0x01
-#define SFAST 0x10
-#define SHIGH 0x11
+//OSPEED 
+#define SLOW 0x00          // Low speed(00)
+#define SMED 0x01          // Medium speed(01)
+#define SFAST 0x10         // Fast speed(10)
+#define SHIGH 0x11         // High speed(11)
 
-//OTYPER Output push-pull (reset state), 1: Output open-drain
-#define PP 0
-#define OD 1
+//OTYPER 
+#define PP 0               // Output push-pull (reset state) (0)
+#define OD 1               // Output open-drain(1)
 
-//PUPDR 00: No pull-up, pull-down , 01: Pull-up ,10: Pull-down , 11: Reserved
-#define EC_NOPUPD 0x00
-#define EC_PU 0x01
-#define EC_PD 0x10
-#define EC_RE 0x11
+//PUPDR 
+#define EC_NOPUPD 0x00     // No pull-up, pull-down(00)
+#define EC_PU 0x01         // Pull-up(01)
+#define EC_PD 0x10         // Pull-down(10) 
+#define EC_RE 0x11         // Reserved(11)
 
 
 #ifdef __cplusplus
@@ -56,15 +58,13 @@ void GPIO_ospeed(GPIO_TypeDef* Port, int pin, int speed);
 void GPIO_otype(GPIO_TypeDef* Port, int pin, int type);
 void GPIO_pupdr(GPIO_TypeDef* Port, int pin, int pupdr);
 void bittoggle(GPIO_TypeDef* Port,int pin);
-int button_pressed(GPIO_TypeDef* Port, int buttonpin);
-void multled(int state);	
 void sevenseg_init(void);
 void sevenseg_decode(int number);
 void LED_init(void);
-void LED_toggle(void);
 void LEDs_toggle(int state);
-//void LED_toggle(int state);
-//int LEDS_READ(void);
+void LED_toggle(void);
+
+
 
 
 #ifdef __cplusplus

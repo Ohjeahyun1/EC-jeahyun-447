@@ -1,3 +1,13 @@
+/**
+******************************************************************************
+* @author  Oh jeahyun
+* @Mod		 2022-10-19   	
+* @brief   Embedded Controller - ecSysTick.h
+* 
+******************************************************************************
+*/
+
+
 #ifndef __EC_SYSTICK_H
 #define __EC_SYSTICK_H
 
@@ -16,6 +26,9 @@ void delay_ms(uint32_t msec);
 void SysTick_reset(void);
 uint32_t SysTick_val(void);
 void buttonpushed(void);
+void SysTick_enable(void);
+void SysTick_disable(void); 
+
 	 
 #ifdef __cplusplus
 }

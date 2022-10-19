@@ -1,7 +1,7 @@
 /**
 ******************************************************************************
 * @author  Oh jeahyun
-* @Mod		 2022-10-13   	
+* @Mod		 2022-10-19   	
 * @brief   Embedded Controller:  LAB Systick&EXTI with API
 *					 - 7 segment
 * 

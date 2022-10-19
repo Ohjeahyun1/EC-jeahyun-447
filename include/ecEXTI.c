@@ -1,3 +1,13 @@
+/**
+******************************************************************************
+* @author  Oh jeahyun
+* @Mod		 2022-10-19   	
+* @brief   Embedded Controller - ecEXTI.c
+* 
+******************************************************************************
+*/
+
+
 #include "ecGPIO.h"
 #include "ecSysTick.h"
 #include "ecEXTI.h"
@@ -35,8 +45,8 @@ void EXTI_init(GPIO_TypeDef *Port, int Pin, int trig_type,int priority){
 	int EXTI_IRQn = 0;
 	
 	if (Pin < 5) 	EXTI_IRQn = Pin+6;
-	else if	(Pin < 10) 	EXTI_IRQn =   EXTI9_5_IRQn;
-	else 			EXTI_IRQn = EXTI15_10_IRQn;
+	else if	(Pin < 10) 	EXTI_IRQn =   EXTI9_5_IRQn;   
+	else 			EXTI_IRQn = EXTI15_10_IRQn;           
 								
 	NVIC_SetPriority(EXTI_IRQn,priority);	// EXTI priority
 	NVIC_EnableIRQ(EXTI_IRQn); 	// EXTI IRQ enable
@@ -52,7 +62,7 @@ void EXTI_disable(uint32_t pin) {
 
 uint32_t is_pending_EXTI(uint32_t pin){
 	uint32_t EXTI_PRx = 1<<pin;     	// check  EXTI pending 	
-	return ((EXTI->PR & EXTI_PRx) == EXTI_PRx);
+	return ((EXTI->PR& EXTI_PRx) == EXTI_PRx);
 }
 
 

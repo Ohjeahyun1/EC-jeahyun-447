@@ -1,3 +1,12 @@
+/**
+******************************************************************************
+* @author  Oh jeahyun
+* @Mod		 2022-10-19   	
+* @brief   Embedded Controller - ecSysTick.c
+* 
+******************************************************************************
+*/
+
 #include "ecSysTick.h"
 
 
@@ -8,7 +17,7 @@
 volatile uint32_t msTicks;
 
 //EC_SYSTEM_CLK
-
+//SysTick initlization PLL -> 1ms
 void SysTick_init(void){	
 	//  SysTick Control and Status Register
 	SysTick->CTRL = 0;											// Disable SysTick IRQ and SysTick Counter
@@ -31,7 +40,7 @@ void SysTick_init(void){
 	// Enable SysTick IRQ and SysTick Timer
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 		
-	NVIC_SetPriority(SysTick_IRQn, 16);		// Set Priority to 1
+	NVIC_SetPriority(SysTick_IRQn, 16);		// Set Priority to 16
 	NVIC_EnableIRQ(SysTick_IRQn);			// Enable interrupt in NVIC
 }
 
@@ -45,7 +54,7 @@ void SysTick_counter(){
 	msTicks++;
 }	
 
-
+//delay input ms
 void delay_ms (uint32_t mesc){
   uint32_t curTicks;
 
@@ -55,25 +64,21 @@ void delay_ms (uint32_t mesc){
 	msTicks = 0;
 }
 
-//void delay_ms(uint32_t msec){
-//	uint32_t now=SysTick_val(); 
-//	if (msec>5000) msec=5000;
-//	if (msec<1) msec=1;
-//	while ((now - SysTick_val()) < msec);
-//}
-
-
+//SysTick val -> 0
 void SysTick_reset(void)
 {
 	// SysTick Current Value Register
 	SysTick->VAL = 0;
 }
-
+// read SysTick val
 uint32_t SysTick_val(void) {
 	return SysTick->VAL;
 }
 
-//void SysTick_counter(){
-//	msTicks++;
-//	if(msTicks%1000 == 0) count++;
-//}	
+void SysTick_enable(void) {
+		SysTick->CTRL |= 1<<0;			    //SysTick Timer enable
+}
+void SysTick_disable(void) {
+		SysTick->CTRL &= ~1<<0;			    //SysTick Timer disable
+}
+
