@@ -18,6 +18,8 @@
 
 void RCC_HSI_init(void);
 void RCC_PLL_init(void);
+void RCC_PLL_HSE_init(void);
+void RCC_HSE_init(void);
 void RCC_GPIOA_enable(void);
 void RCC_GPIOB_enable(void);
 void RCC_GPIOC_enable(void);

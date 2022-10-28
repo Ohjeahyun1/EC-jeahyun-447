@@ -26,7 +26,7 @@ void EXTI_init(GPIO_TypeDef *Port, int Pin, int trig_type,int priority){
 	else if	(Port == GPIOD) EXTICR_port = 3;
 	else 										EXTICR_port = 4;
 	
-	SYSCFG->EXTICR[Pin/4] &= ~15<<(4*(Pin%4));			// clear 4 bits
+	SYSCFG->EXTICR[Pin/4] &= ~(15<<(4*(Pin%4)));			// clear 4 bits
 	SYSCFG->EXTICR[Pin/4] |= EXTICR_port<<(4*(Pin%4));			// set 4 bits
 	
 	// Configure Trigger edge
@@ -57,7 +57,7 @@ void EXTI_enable(uint32_t pin) {
 	EXTI->IMR |= 1UL<<pin;     // not masked (i.e., Interrupt enabled)
 }
 void EXTI_disable(uint32_t pin) {
-	EXTI->IMR &= ~1UL<<pin;     // masked (i.e., Interrupt disabled)
+	EXTI->IMR &= ~(1UL<<pin);     // masked (i.e., Interrupt disabled)
 }
 
 uint32_t is_pending_EXTI(uint32_t pin){

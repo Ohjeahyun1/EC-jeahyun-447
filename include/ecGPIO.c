@@ -1,7 +1,7 @@
 /**
 ******************************************************************************
 * @author  Oh jeahyun
-* @Mod		 2022-10-19  	
+* @Mod		 2022-10-28  	
 * @brief   Embedded Controller - ecGPIO.c
 * 
 ******************************************************************************
@@ -118,6 +118,37 @@ void LED_init(void){
 	
 }
 
+//4LEDS init,output,Pull-up,medium speed,Push pull
+void LED_test_init(void){
+	GPIO_init(GPIOA, LED_PIN, OUTPUT);    // calls RCC_GPIOA_enable()	and LED pin mode -> output  
+	GPIO_init(GPIOA, 0, OUTPUT);    // calls RCC_GPIOA_enable()	and LED pin mode -> output     
+	GPIO_init(GPIOA, 1, OUTPUT);          // calls RCC_GPIOA_enable()	and 6 pin mode -> output
+	GPIO_init(GPIOB, 0, OUTPUT);          // calls RCC_GPIOA_enable()	and 7 pin mode -> output
+	GPIO_init(GPIOC, 1, OUTPUT);          // calls RCC_GPIOB_enable() and 6 pin mode -> output
+  
+	GPIO_pupdr(GPIOA, 0, EC_NOPUPD);    // GPIOA pin LED pin pupdr -> NO pullup and pull down
+	GPIO_pupdr(GPIOA, 0, EC_NOPUPD);    // GPIOA pin LED pin pupdr -> NO pullup and pull down
+	GPIO_pupdr(GPIOA, 1, EC_NOPUPD);          // GPIOA pin 6 pupdr -> NO pullup and pull down
+	GPIO_pupdr(GPIOB, 0, EC_NOPUPD);          // GPIOA pin 7 pupdr -> NO pullup and pull down
+	GPIO_pupdr(GPIOC, 1, EC_NOPUPD);          // GPIOB pin 6 pupdr -> NO pullup and pull down
+	
+
+	 
+	GPIO_otype(GPIOA, LED_PIN, PP);       // GPIOA LED pin otype -> push-pull
+	GPIO_otype(GPIOA, 0, PP);       // GPIOA LED pin otype -> push-pull
+	GPIO_otype(GPIOA, 1, PP);             // GPIOA 6 pin otype -> push-pull
+	GPIO_otype(GPIOB, 0, PP);             // GPIOA 7 pin otype -> push-pull
+	GPIO_otype(GPIOC, 1, PP);             // GPIOB 6 pin otype -> push-pull
+	
+	GPIO_ospeed(GPIOA,LED_PIN,SMED);      // GPIOA LED_PIN pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,0,SMED);      // GPIOA LED_PIN pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,1,SMED);            // GPIOA 6 pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOB,0,SMED);            // GPIOA 7 pin ospeed -> Medium speed
+	GPIO_ospeed(GPIOC,1,SMED);            // GPIOB 6 pin ospeed -> Medium speed
+	
+}
+
+
 // When button pressed Output 7segment(0~9) in order
 void sevenseg_decode(int number){
 	int seven[11][8] ={
@@ -187,8 +218,129 @@ void sevenseg_init(void){
 	
 }
 
+void sevenseg_test_init(void){
+	GPIO_init(GPIOB, 9, OUTPUT);      //a
+	GPIO_init(GPIOA, 6,OUTPUT);      //b
+	GPIO_init(GPIOA, 7, OUTPUT);      //c
+	GPIO_init(GPIOB, 6, OUTPUT);      //d
+	GPIO_init(GPIOC, 7, OUTPUT);      //e
+  GPIO_init(GPIOA, 9, OUTPUT);      //f
+	GPIO_init(GPIOA, 8, OUTPUT);      //g
+	GPIO_init(GPIOB, 10, OUTPUT);      //DP
+	
+	GPIO_pupdr(GPIOB, 9, EC_NOPUPD);  // GPIOA 5 pupdr -> NO pull up Pull down
+	GPIO_pupdr(GPIOA, 6,EC_NOPUPD);  // GPIOB 10 pupdr -> NO pull up Pull down
+	GPIO_pupdr(GPIOA, 7, EC_NOPUPD);  // GPIOA 7 pupdr -> NO pull up Pull down
+	GPIO_pupdr(GPIOB, 6, EC_NOPUPD);  // GPIOA 6 pupdr -> NO pull up Pull down
+	GPIO_pupdr(GPIOC, 7, EC_NOPUPD);  // GPIOA 5 pupdr -> NO pull up Pull down
+	GPIO_pupdr(GPIOA, 9, EC_NOPUPD);  // GPIOA 9 pupdr -> NO pull up Pull down
+	GPIO_pupdr(GPIOA, 8, EC_NOPUPD);  // GPIOC 7 pupdr -> NO pull up Pull down
+	GPIO_pupdr(GPIOB, 10, EC_NOPUPD);  // GPIOB 6 pupdr -> NO pull up Pull down
+	
+	GPIO_otype(GPIOB, 9, PP);         // GPIOA 5 otype -> push pull
+	GPIO_otype(GPIOA, 6,PP);         // GPIOB 10 otype -> push pull
+	GPIO_otype(GPIOA, 7, PP);         // GPIOA 7 otype -> push pull
+	GPIO_otype(GPIOB, 6, PP);         // GPIOA 6 otype -> push pull
+	GPIO_otype(GPIOC, 7, PP);         // GPIOA 5 otype -> push pull
+	GPIO_otype(GPIOA, 9, PP);         // GPIOA 9 otype -> push pull
+	GPIO_otype(GPIOA, 8, PP);         // GPIOC 7 otype -> push pull
+	GPIO_otype(GPIOB, 10, PP);         // GPIOB 6 otype -> push pull
+		
+	GPIO_ospeed(GPIOB,9,SMED);        // GPIOA 5 ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,6,SMED);       // GPIOB 10 ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,7,SMED);        // GPIOA 7 ospeed -> Medium speed
+	GPIO_ospeed(GPIOB,6,SMED);        // GPIOA 6 ospeed -> Medium speed
+	GPIO_ospeed(GPIOC,7,SMED);        // GPIOA 5 ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,9,SMED);        // GPIOA 9 ospeed -> Medium speed
+	GPIO_ospeed(GPIOA,8,SMED);        // GPIOC 7 ospeed -> Medium speed
+	GPIO_ospeed(GPIOB,10,SMED);        // GPIOB 6 ospeed -> Medium speed
+	
+}
+
+// When button pressed Output 7segment(0~9) in order
+void sevenseg_test_decode(int number){
+	int seven[11][8] ={
+		//row- number , col - a,b,c,d....DP
+		               //a,b,c,d,e,f,g,DP
+	                  {0,0,0,0,0,0,1,1},          //zero
+                    {1,0,0,1,1,1,1,1},          //one
+                    {0,0,1,0,0,1,0,1},          //two
+                    {0,0,0,0,1,1,0,1},          //three
+                    {1,0,0,1,1,0,0,1},          //four
+                    {0,1,0,0,1,0,0,1},          //five
+                    {0,1,0,0,0,0,0,1},          //six
+                    {0,0,0,1,1,1,1,1},          //seven
+                    {0,0,0,0,0,0,0,1},          //eight
+                    {0,0,0,1,1,0,0,1},          //nine
+                    {0,0,0,0,0,0,1,1}           //dot
+  };
+	//outputs 7segment LEDs				
+	GPIO_write(GPIOB,9,seven[number][0]);        // a
+	GPIO_write(GPIOA,6,seven[number][1]);       // b
+	GPIO_write(GPIOA,7,seven[number][2]);        // c
+	GPIO_write(GPIOB,6,seven[number][3]);        // d
+	GPIO_write(GPIOC,7,seven[number][4]);        // e
+	GPIO_write(GPIOA,9,seven[number][5]);        // f
+	GPIO_write(GPIOA,8,seven[number][6]);        // g
+	GPIO_write(GPIOB,10,seven[number][7]);        // dp
+}
+ //LED Pause
+void sevenseg_test_decode1(void){
+	GPIO_write(GPIOB,9,0);        // a
+	GPIO_write(GPIOA,6,0);       // b
+	GPIO_write(GPIOA,7,1);        // c
+	GPIO_write(GPIOB,6,1);        // d
+	GPIO_write(GPIOC,7,0);        // e
+	GPIO_write(GPIOA,9,0);        // f
+	GPIO_write(GPIOA,8,0);        // g
+	GPIO_write(GPIOB,10,1);        // dp
+}
+
 void LED_toggle(void){
 		(GPIOA->ODR) ^= (1UL << LED_PIN); 
 }
+
+void LEDs_test_down(void){
+	    GPIO_write(GPIOA,0,0);
+			GPIO_write(GPIOA,1,0);
+			GPIO_write(GPIOB,0,0);
+			GPIO_write(GPIOC,1,0);
+	
+}         
+void LEDs_test_toggle(int state){
+	// 4 LEDs HIGH,LOW state definition
+	int muled[16][4] ={
+		    //row - led1,led2,led3,led4, col- state 
+                 //led1,led2,led3,led4		
+	                  {0,0,0,0},          //state zero
+                    {0,0,0,1},          //state one
+                    {0,0,1,0},          //state two
+                    {0,0,1,1},          //state three 
+                    {0,1,0,0}, 	        //state four
+                    {0,1,0,1},          //state five 
+                    {0,1,1,0},          //state six
+                    {0,1,1,1},          //state seven
+                    {1,0,0,0},          //state 8
+                    {1,0,0,1}, 					//state	9	
+                    {1,0,1,0},          //state 10
+                    {1,0,1,1},          //state 11
+                    {1,1,0,0},          //state 12
+                    {1,1,0,1},          //state 13 
+                    {1,1,1,0}, 					//14 	
+                    {1,1,1,1} 					//15 	
+  };  
+	    //output of 4 LEDS
+	    GPIO_write(GPIOA,0,muled[state][0]);
+			GPIO_write(GPIOA,1,muled[state][1]);
+			GPIO_write(GPIOB,0,muled[state][2]);
+			GPIO_write(GPIOC,1,muled[state][3]);
+}
+
+
+//GPIO setting
+typedef struct {
+	GPIO_TypeDef *port;                //example: GPIO_write(extLED[0].port, extLED[0].pin,....);
+  int pin;
+} _Pin;
 
 

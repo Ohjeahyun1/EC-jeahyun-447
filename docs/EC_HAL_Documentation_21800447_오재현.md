@@ -596,6 +596,20 @@ uint32_t SysTick_val(void)
 **Example code**
 
 ```c
+//시스템 동작 시간 확인용 코드 교재에 있는거 
+unsigned int start_time, stop_time, cycle_count;
+SysTick->CTRL = 0; // Disable SysTick
+SysTick->LOAD = 0xFFFFFFFF; // Set Reload value to maximum
+SysTick->VAL = 0; // Clear current value to 0
+SysTick->CTRL = 0x5; // Enable SysTick, use processor clock
+while(SysTick->VAL != 0); // Wait until SysTick reloaded
+start_time = SysTick->VAL; // Get start time
+function(); // Execute function to be measured
+stop_time = SysTick->VAL; // Get stop time
+cycle_count = start_time - stop_time;
+
+//시스템 동작 시간 확인용 코드 
+//*********************************************8
 uint32_t curTicks = SysTick_val();
 function();
 uint32_t msTicks = SysTick_val();
@@ -673,6 +687,8 @@ void TIM_init(TIM_TypeDef* timerx, uint32_t msec)
 ### TIM_period_ms()
 
 Timer setting (PLL) ms
+
+84MHz 일 때 기준으로 작성되었음
 
 1Tick 당 몇 ms로 할 것인가?
 
@@ -915,7 +931,7 @@ void EXTI15_10_IRQHandler(void) {
 		state++;                        //state update
 		if(state > 3) state=0;          //if state over 3 -> state clear
 		clear_pending_EXTI(BUTTON_PIN); // cleared by writing '1'
-	}
+	}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
 }
 // Initialiization 
 void setup(void)
