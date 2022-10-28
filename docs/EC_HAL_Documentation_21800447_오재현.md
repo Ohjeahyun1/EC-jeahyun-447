@@ -658,18 +658,19 @@ Enable interrupt, NVIC setting(**2**),
 **inside:** TIM_init(), TIM_period_ms()
 
 ```c
-void TIM_period_ms(TIM_TypeDef* TIMx, uint32_t msec)
+void TIM_period_ms(TIM_TypeDef* TIMx, uint32_t msec,int mode)
 ```
 
 **Parameters**
 
 * **TIMER:**  TIM1~5,9,10,11
 * **ms:**  setting time 한 틱당 얼마의 ms
+* **mode:** TIM, PWM
 
 **Example code**
 
 ``` c
-TIM_INT_init(TIM2,1) //PLL(84MHz 기준으로 틱 당 1ms upcounter, priority(2)
+TIM_INT_init(TIM2,1,TIM) //PLL(84MHz 기준으로 틱 당 1ms upcounter, priority(2)
 ```
 
 ### TIM_init()
@@ -684,11 +685,30 @@ CNT Direction(upcounter),Enable Timer counter
 void TIM_init(TIM_TypeDef* timerx, uint32_t msec)
 ```
 
+### TIM_period_us()
+
+HSI와 PLL일 때 둘다 동작하도록 만들어졌음
+
+1Tick 당 몇 us로 할 것인가?
+
+```c
+void TIM_period_us(TIM_TypeDef *TIMx, uint32_t usec)
+```
+
+**Parameters**
+
+* **prescaler:**  84(현재 수치)       -> 84MHz -> 1MHz (계단의 넓이)
+* **ARR:** usec          계단의 개수
+
+**Example code**
+
+```c
+TIM_period_us(TIM2, 1) // 틱당 1us
+```
+
 ### TIM_period_ms()
 
-Timer setting (PLL) ms
-
-84MHz 일 때 기준으로 작성되었음
+HSI와 PLL일 때 둘다 동작하도록 만들어졌음
 
 1Tick 당 몇 ms로 할 것인가?
 
@@ -700,6 +720,29 @@ void TIM_period_ms(TIM_TypeDef* TIMx, uint32_t msec)
 
 * **prescaler:**  84(현재 수치)       -> 84MHz -> 1MHz (계단의 넓이)
 * **ARR:** 10*msec          계단의 개수
+
+**Example code**
+
+```c
+TIM_period_ms(TIM2, 1) // 틱당 1ms
+```
+
+### TIM_period_ms_PWM()
+
+HSI와 PLL일 때 둘다 동작하도록 만들어졌음
+
+1Tick 당 몇 ms로 할 것인가?
+
+PWM을 위해 psc을 작게 만들었음 -> ARR의 갯수가 많음
+
+```c
+void TIM_period_ms_PWM(TIM_TypeDef* TIMx, uint32_t msec)
+```
+
+**Parameters**
+
+* **prescaler:**  840(현재 수치)       -> 84MHz -> 100kHz (계단의 넓이)
+* **ARR:** 100*msec          계단의 개수
 
 **Example code**
 
@@ -756,6 +799,158 @@ clear_UIF(TIM_TypeDef *TIMx)
 **Parameters**
 
 * **TIMER:**  TIM1~5,9,10,11
+
+### reset_TIMER()
+
+TIMER value를 리셋
+
+```c
+reset_TIMER(TIM_TypeDef *TIMx)
+```
+
+**Parameters**
+
+* **TIMER:**  TIM1~5,9,10,11
+
+**Example code**
+
+```c
+void EXTI15_10_IRQHandler(void) {  
+	if (is_pending_EXTI(BUTTON_PIN)){     //when button pressed
+	  PWM_duty(&pwm,0.025);               // set motor angle 0
+		i = 1.0;                            // reset angel value
+		dir = 0;                            // forward
+		reset_TIMER(TIM3);                  // reset TIMer value
+		clear_pending_EXTI(BUTTON_PIN);     // cleared by writing '1'
+	}
+}
+```
+
+## ecPWM.c
+
+### PWM_init()
+
+Pin에 따라 채널을 설정해서 PWM을 생성
+
+**inside:** GPIO_init(port, pin, AF);  
+		GPIO_ospeed(port, pin,speed);  
+
+​       TIM_init(PWM) // PWM 전용 TIM period
+
+```c
+PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin, int DIR,int speed,int msec)
+```
+
+**Parameters**
+
+* **pwm:**  typedef struct{
+     GPIO_TypeDef *port;
+     int pin;
+     TIM_TypeDef *timer;
+     int ch;
+  } PWM_t;
+* **port:**  GPIOA~C
+* **pin:** 1~15
+* **DIR:** UP, DOWN counter
+* **Speed:** set GPIO OSPEED SLOW,SMED,SFAST,SHIGH
+* **msec:** set PWM TIMer period ms
+
+**Example code**
+
+``` c
+PWM_init(&pwm,GPIOA,1,UP,SFAST,1);    // TIM2_CH2(PA1) DOWN clock,FAST,1ms clock 
+```
+
+### PWM_period_ms()
+
+PWM의 period setting(ms)
+
+**inside:**TIM_period_ms_PWM(TIMx,msec);  
+
+```c
+PWM_period_ms(&pwm,20);	              // set PWM period 20ms
+```
+
+**Parameters**
+
+* **pwm:**  typedef struct{
+     GPIO_TypeDef *port;
+     int pin;
+     TIM_TypeDef *timer;
+     int ch;
+  } PWM_t;
+* **msec:** set PWM TIMer period ms
+
+**Example code**
+
+``` c
+PWM_init(&pwm,GPIOA,1,UP,SFAST,1);    // TIM2_CH2(PA1) DOWN clock,FAST,1ms clock 
+  PWM_period_ms(&pwm,20);	              // set PWM period 20ms
+```
+
+### PWM_period_us()
+
+PWM의 period setting(ms)
+
+**inside:**TIM_period_us(TIMx,usec);  
+
+```c
+PWM_period_us(&pwm,20);	              // set PWM period 20us
+```
+
+**Parameters**
+
+* **pwm:**  typedef struct{
+     GPIO_TypeDef *port;
+     int pin;
+     TIM_TypeDef *timer;
+     int ch;
+  } PWM_t;
+* **usec:** set PWM TIMer period us
+
+### PWM_pulsewidth_ms()
+
+PWM의 pulsewidth setting
+
+```c
+PWM_pulsewidth_ms(PWM_t *pwm, float pulse_width_ms)
+```
+
+**Parameters**
+
+* **pwm:**  typedef struct{
+     GPIO_TypeDef *port;
+     int pin;
+     TIM_TypeDef *timer;
+     int ch;
+  } PWM_t;
+* **msec:** set TIMer period ms
+
+### PWM_duty()
+
+PWM의 duty 세팅
+
+CCval 값을 바꿔서 duty를 바꿈(0~1)
+
+```c
+PWM_duty(PWM_t *pwm, float duty)
+```
+
+**Parameters**
+
+* **pwm:**  typedef struct{
+     GPIO_TypeDef *port;
+     int pin;
+     TIM_TypeDef *timer;
+     int ch;
+  } PWM_t;
+* **duty:** set TIMer PWM duty
+
+**Example code**
+
+``` c
+PWM_duty(&pwm,0.025+0.05/9.0*i);      // motor angle 0~180
+```
 
 ## LAB Main code
 
@@ -941,6 +1136,83 @@ void setup(void)
 	GPIO_init(GPIOC, BUTTON_PIN, INPUT);  // calls RCC_GPIOC_enable() and button pin mode -> input
 	GPIO_pupdr(GPIOC, BUTTON_PIN, EC_PU); // GPIOC button pin pupdr -> pull up
 	EXTI_init(GPIOC,BUTTON_PIN,FALL,0);   //EXTI button PIN -> trigger type(falling),propriority(0)
+}
+```
+
+### LAB_PWM_RCmotor
+
+angle 0 to 180 and back to 0 500ms period(moves angle 10) and reset angle 0 when button pressed
+
+```c
+#include "stm32f4xx.h"
+#include "ecRCC.h"
+#include "ecGPIO.h"
+#include "ecEXTI.h"
+#include "ecTIM.h"
+#include "ecPWM.h"
+
+//define the led pin number and button pin number
+#define LED_PIN 	5
+#define BUTTON_PIN 13
+
+PWM_t pwm;
+
+void setup(void);
+void EXTI15_10_IRQHandler(void);
+void TIM3_IRQHandler(void);
+float i = 0;     
+int dir = 0;           //direction 0=forward, 1=backward
+
+
+
+int main(void) { 
+	// Initialiization --------------------------------------------------------
+	setup();
+	// Inifinite Loop ----------------------------------------------------------
+	while(1){}
+}
+
+// button pressed reset angle 0 and start over
+void EXTI15_10_IRQHandler(void) {  
+	if (is_pending_EXTI(BUTTON_PIN)){     //when button pressed
+	  PWM_duty(&pwm,0.025);               // set motor angle 0
+		i = 1.0;                            // reset angel value
+		dir = 0;                            // forward
+		reset_TIMER(TIM3);                  // reset TIMer value
+		clear_pending_EXTI(BUTTON_PIN);     // cleared by writing '1'
+	}
+}
+//Code about motor angle 0 to 180 degree and back angle 0 step of 10 degree
+// Timer interrupt 500ms
+void TIM3_IRQHandler(void){
+	if(is_UIF(TIM3)){	                    //interrupt occur
+		if(dir == 0){                       //dir = forward
+	PWM_duty(&pwm,0.025+0.05/9.0*i);      // motor angle 0~180
+			i++;                              // angle value update
+			}else if(dir == 1){               // if dir = backward
+		PWM_duty(&pwm,0.125-0.05/9.0*i);    // motor angle 180~0
+				i++;                            // angle value update
+			}
+		if(i>18.0){	                        // not over 180 degree
+		dir ^= 1;                           // dir update
+		i=1.0;                              // motor angle reset
+		}
+     clear_UIF(TIM3);                   // clear by writing 0
+	}			
+}
+
+
+// Initialization 
+void setup(void)
+{ 
+	RCC_PLL_init();                       // 84Mhz clock
+	GPIO_init(GPIOC, BUTTON_PIN, INPUT);  // calls RCC_GPIOC_enable() and button pin mode -> input
+	GPIO_pupdr(GPIOC, BUTTON_PIN, EC_PU); // GPIOC button pin pupdr -> pull up
+  EXTI_init(GPIOC,BUTTON_PIN,FALL,0);   //EXTI button PIN -> trigger type(falling),propriority(0)
+	TIM_INT_init(TIM3,500,TIM);           // TIM3 Timer period: 100us -> interrupt 500ms
+	PWM_init(&pwm,GPIOA,1,UP,SFAST,1);    // TIM2_CH2(PA1) DOWN clock,FAST,1ms clock 
+  PWM_period_ms(&pwm,20);	              // set PWM period 20ms
+	GPIO_pupdr(GPIOA,1,EC_PU);            // GPIOA1 pull up
 }
 ```
 
