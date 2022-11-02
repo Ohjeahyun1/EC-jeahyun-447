@@ -952,6 +952,129 @@ PWM_duty(PWM_t *pwm, float duty)
 PWM_duty(&pwm,0.025+0.05/9.0*i);      // motor angle 0~180
 ```
 
+## ecStepper.c
+
+### State_full_t FSM_full[4]
+
+FULL mode (A B A' B')
+
+```c
+//FULL stepping sequence  - FSM
+typedef struct {
+	uint8_t out;
+  uint32_t next[2];
+} State_full_t;
+
+// A B A` B`
+State_full_t FSM_full[4] = {  
+ {0b1001,{S1,S3}},           //state S0
+ {0b1100,{S2,S0}},           //state S1
+ {0b0110,{S3,S1}},           //state S2
+ {0b0011,{S0,S2}}            //state S3
+};
+```
+
+**Example code**
+
+```c
+GPIO_write(myStepper.port1, myStepper.pin1,(FSM_half[state].out>>3 & 1));		
+state = FSM_full[state].next[direction];   
+```
+
+
+
+### Stepper_init()
+
+stepper motor pin initlization
+
+OUTPUT,No pull up and pull down, push-pull, Fast
+
+```c
+void Stepper_init(GPIO_TypeDef* port1, int pin1, GPIO_TypeDef* port2, int pin2, GPIO_TypeDef* port3, int pin3, GPIO_TypeDef* port4, int pin4)
+```
+
+**Parameters**
+
+* port: A~D
+* pin: 1~13
+
+**Example code**
+
+```c
+Stepper_init(GPIOB,10,GPIOB,4,GPIOB,5,GPIOB,3); // Stepper GPIO pin initialization
+```
+
+### Stepper_pinOut()
+
+stepper out about state and mode
+
+```c
+void Stepper_pinOut (uint32_t state, int mode)
+```
+
+**Parameters**
+
+* state: S0~S7(FULL),S0~S3(HALF)
+* mode: FULL,HALF
+
+**Example code**
+
+```c
+Stepper_pinOut(state, mode);
+```
+
+### Stepper_setSpeed ()
+
+convert rpm to msec
+
+```c
+void Stepper_setSpeed (long whatSpeed)
+```
+
+**Parameters**
+
+* speed: RPM(max 14)
+
+**Example code**
+
+```c
+Stepper_setSpeed(14);  
+```
+
+### Stepper_step()
+
+ stepper motor opperation
+
+```c
+Stepper_step(int steps, int direction,int mode)
+```
+
+**Parameters**
+
+* step: stepper motor  step
+* direction: CW(1), CCW(0)
+* mode: HALF,FULL
+
+**Example code**
+
+```c
+Stepper_step(2048, 0, FULL); 
+```
+
+### Stepper_stop()
+
+ stepper motor stop
+
+```c
+void Stepper_stop (void)
+```
+
+**Example code**
+
+```c
+Stepper_stop();  
+```
+
 ## LAB Main code
 
 ### GPIO_DIO_LED
@@ -1213,6 +1336,61 @@ void setup(void)
 	PWM_init(&pwm,GPIOA,1,UP,SFAST,1);    // TIM2_CH2(PA1) DOWN clock,FAST,1ms clock 
   PWM_period_ms(&pwm,20);	              // set PWM period 20ms
 	GPIO_pupdr(GPIOA,1,EC_PU);            // GPIOA1 pull up
+}
+```
+
+### LAB_Stepper_Motor
+
+2048step의 stepper motor를 CW(1),CCW(0), MODE(HALF,FULL)
+
+speed(RPM) max 14 등을 조절하여 stepper motor를 동작할 수 있다.
+
+```c
+#include "stm32f411xe.h"
+#include "ecGPIO.h"
+#include "ecRCC.h"
+#include "ecEXTI.h"
+#include "ecSysTick.h"
+#include "ecStepper.h"
+
+void setup(void);
+void EXTI15_10_IRQHandler(void);
+int i = 0;                        //stop flag
+
+//stepper motor operation with 2048 steps, DIR(1 = CW, 0= CCW), MODE(FULL,HALF)
+int main(void) { 
+	// Initialiization --------------------------------------------------------
+	setup();
+	
+	
+	// Inifinite Loop ----------------------------------------------------------
+	while(1){
+	if(i==0)Stepper_step(2048, 0, FULL);  // (Step : 2048, Direction : 0 or 1, Mode : FULL or HALF) // 1=CW, 0 = CCW
+	else Stepper_stop();                  // stepper motor stop
+	}
+}
+
+// when button pin pressed update the flag and stepper motor stop
+void EXTI15_10_IRQHandler(void) {  
+	if (is_pending_EXTI(BUTTON_PIN)) {
+		Stepper_stop();                 // stepper motor stop
+		i ^= 1;                         // flag update
+		clear_pending_EXTI(BUTTON_PIN); // cleared by writing '1'
+	}
+}
+
+
+// Initialiization 
+void setup(void)
+{	
+	
+	RCC_PLL_init();                                 // System Clock = 84MHz
+	SysTick_init();                                 // Systick init
+	EXTI_init(GPIOC,BUTTON_PIN,FALL,0);             // External Interrupt Setting
+	GPIO_init(GPIOC, BUTTON_PIN, INPUT);            // GPIOC pin13 initialization
+	GPIO_pupdr(GPIOC, BUTTON_PIN, EC_PU);           
+	Stepper_init(GPIOB,10,GPIOB,4,GPIOB,5,GPIOB,3); // Stepper GPIO pin initialization
+	Stepper_setSpeed(14);                            //  set stepper motor speed max = 14
 }
 ```
 
