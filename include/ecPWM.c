@@ -14,7 +14,7 @@
 
 /* PWM Configuration */
 
-void PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin, int DIR,int speed,int msec){
+void PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin, int DIR,int speed,int otype,int pupdr,int msec){
 // 0. Match Output Port and Pin for TIMx 	
 		pwm->port = port;
 		pwm->pin  = pin;
@@ -25,8 +25,9 @@ void PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin, int DIR,int speed,int mse
 
 // 1. Initialize GPIO port and pin as AF
 		GPIO_init(port, pin, AF);  // AF=2
-		GPIO_ospeed(port, pin,speed);  // speed VHIGH=3
-	
+	  GPIO_otype(port,pin,otype); //otype
+	  GPIO_pupdr(port,pin,pupdr); //pupdr
+	  GPIO_ospeed(port, pin,speed);  // speed 
 	
    int AFN = 0;
 		if(TIMx ==TIM1) AFN = 1;
@@ -44,7 +45,6 @@ void PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin, int DIR,int speed,int mse
 		port -> AFR[pin/8] |= AFN<<(4*(pin%8));
 	
 
-			
 // 3. Initialize Timer 
 		TIM_init(TIMx, msec,PWM);	// msec value.		
 
@@ -119,6 +119,29 @@ void PWM_pulsewidth_ms(PWM_t *pwm, float pulse_width_ms){
 	
 	float fclk = fsys/(psc+1);					          // fclk=fsys/(psc+1);
 	uint32_t ccval = pulse_width_ms*fclk-1;				// width_ms *fclk - 1;
+	
+	switch(CHn){
+		case 1: TIMx->CCR1 = ccval; break;
+		case 2: TIMx->CCR2 = ccval; break;
+		case 3: TIMx->CCR3 = ccval; break;
+		case 4: TIMx->CCR4 = ccval; break;
+		default: break;
+	}
+}
+
+// set PWM CCval
+void PWM_pulsewidth_us(PWM_t *pwm, float pulse_width_us){ 
+	TIM_TypeDef *TIMx = pwm->timer;
+	int CHn = pwm->ch;
+	uint32_t fsys = 0;
+	uint32_t psc=pwm->timer->PSC;
+	
+	// Check System CLK: PLL or HSI
+	if((RCC->CFGR & (3<<0)) == 2)      { fsys = 84; }  // for msec 84MHz/1000
+	else if((RCC->CFGR & (3<<0)) == 0) { fsys = 16; }
+	
+	float fclk = fsys/(psc+1);					          // fclk=fsys/(psc+1);
+	uint32_t ccval = pulse_width_us*fclk-1;				// width_ms *fclk - 1;
 	
 	switch(CHn){
 		case 1: TIMx->CCR1 = ccval; break;

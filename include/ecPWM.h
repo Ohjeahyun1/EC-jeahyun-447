@@ -34,7 +34,7 @@ typedef struct{
 /* PWM initialization */
 
 /* PWM Configuration */
-void PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin,int DIR,int speed,int msec);
+void PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin,int DIR,int speed,int otype,int pupdr,int msec);
 
 
 /* PWM PERIOD SETUP */
@@ -50,6 +50,7 @@ void PWM_period_us(PWM_t *PWM_pin, uint32_t usec);
 
 // High Pulse width in msec
 void PWM_pulsewidth_ms(PWM_t *pwm, float pulse_width_ms);
+void PWM_pulsewidth_us(PWM_t *pwm, float pulse_width_us);
 
 // Duty ratio 0~1.0
 void PWM_duty(PWM_t *pwm, float duty);

@@ -7,6 +7,8 @@
 ******************************************************************************
 */
 
+
+
 #ifndef __EC_TIM_H 
 #define __EC_TIM_H
 #include "stm32f411xe.h"
@@ -44,8 +46,45 @@ void clear_UIF(TIM_TypeDef *TIMx);                              // clear Timer i
 // Timer value reset
 void reset_TIMER(TIM_TypeDef *TIMx);                            //Timer value reset
 
+
+
+
+/* Input Capture*/
+
+// Edge Type
+#define IC_RISE 0
+#define IC_FALL 1
+#define IC_BOTH 2
+
+//Input Capture
+
+typedef struct{
+	GPIO_TypeDef *port;
+	int pin;   
+	TIM_TypeDef *timer;
+	int ch;  		//int Timer Channel
+	int ICnum;  //int IC number
+} IC_t;
+
+void ICAP_init(IC_t *ICx, GPIO_TypeDef *port, int pin,int pupdr); // Initialize input capture mode (default setting)
+void ICAP_setup(IC_t *ICx, int IC_number, int edge_type);         // Setup ICn and Edge type
+void ICAP_counter_us(IC_t *ICx, int usec);                        // ICAP counter step time as us
+
+uint32_t is_CCIF(TIM_TypeDef *TIMx, uint32_t ccNum);              // flag check Timer ch
+void clear_CCIF(TIM_TypeDef *TIMx, uint32_t ccNum);               // flag clear Timer ch
+
+void ICAP_pinmap(IC_t *timer_pin);                                //DO NOT MODIFY THIS
+
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #endif
+
+
+
+
+
+
