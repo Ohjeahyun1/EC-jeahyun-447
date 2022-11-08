@@ -826,6 +826,111 @@ void EXTI15_10_IRQHandler(void) {
 }
 ```
 
+### ICAP_init()
+
+InputCapture init
+
+GPIO pin 설정, (AF,Push-pull,High)
+
+```c
+typedef struct{
+	GPIO_TypeDef *port;
+	int pin;   
+	TIM_TypeDef *timer;
+	int ch;  		//int Timer Channel
+	int ICnum;  //int IC number
+} IC_t;
+
+void ICAP_init(IC_t *ICx, GPIO_TypeDef *port, int pin,int pupdr)
+```
+
+**Parameters**
+
+* **Port:**  GPIOA-C
+* **Pin:** 1-15
+* **TIMER:**  TIM1~5,9,10,11
+* **Ch:**  1-4 (int Timer channel)
+* **ICnum:**  1-4
+
+**Example code**
+
+```c
+IC_t echo;												                                // Input Capture for echo
+	ICAP_init(&echo,GPIOB,10,EC_NOPUPD);    		                      // PB10 as input caputre
+	ICAP_counter_us(&echo, 10);   		                                // ICAP counter step time as 10us
+	ICAP_setup(&echo, 3, IC_RISE);                                  	// TIM2_CH3 as IC3 , rising edge detect
+	ICAP_setup(&echo,4,IC_FALL);                                    	// TIM2_CH3 as IC4 , falling edge detect
+	
+```
+
+### ICAP_setup()
+
+Input Capture
+
+TI -> IC 
+
+Rising.Falling,Both (IC_RISE,IC_FALL,IC_BOTH)
+
+```c
+void ICAP_setup(IC_t *ICx, int ICn, int edge_type)
+```
+
+**Example code**
+
+```c
+ICAP_setup(&echo, 3, IC_RISE);                                  	// TIM2_CH3 as IC3 , rising edge detect
+```
+
+### ICAP_counter_us()
+
+ICAP counter step time as us
+
+```c
+void ICAP_counter_us(IC_t *ICx, int usec)
+```
+
+**Example code**
+
+```c
+ICAP_counter_us(&echo, 10);   		                                // ICAP counter step time as 10us
+```
+
+### is_CCIF()
+
+check the flag
+
+```c
+uint32_t is_CCIF(TIM_TypeDef *TIMx, uint32_t ccNum)
+```
+
+**Parameters**
+
+* ccNum: ch1-4
+
+**Example code**
+
+```c
+if(is_CCIF(TIM2, 3))
+```
+
+### clear_CCIF()
+
+flag clear
+
+```c
+void clear_CCIF(TIM_TypeDef *TIMx, uint32_t ccNum)
+```
+
+**Parameters**
+
+* ccNum: Ch1-4
+
+**Example code**
+
+```c
+clear_CCIF(TIM2, 3);                 	                          // clear capture/compare interrupt flag 
+```
+
 ## ecPWM.c
 
 ### PWM_init()
@@ -1393,6 +1498,88 @@ void setup(void)
 	Stepper_setSpeed(14);                            //  set stepper motor speed max = 14
 }
 ```
+
+### LAB_Timer_Inputcapture_Ultrasonic
+
+PWM을 50ms period, pulse width 10us  PA6(Trig)
+
+PB10(echo) 으로 Ultrasonic distance sensor를 사용해서
+
+거리 측정
+
+```c
+#include "stm32f411xe.h"
+#include "math.h"
+#include "ecGPIO.h"
+#include "ecRCC.h"
+#include "ecTIM.h"
+#include "ecPWM.h"
+#include "ecUART.h"
+#include "ecSysTIck.h"
+
+uint32_t ovf_cnt = 0;
+float distance = 0;
+float timeInterval = 0;
+float time1 = 0;
+float time2 = 0;
+
+void setup(void);
+void TIM2_IRQHandler(void);
+//printf distance using Tera Term
+//change mm -> cm
+int main(void){
+	
+	setup();
+	
+	while(1){
+		distance = (float) timeInterval * 340.0 / 2.0 / 10.0; 	        // [mm] -> [cm]
+		printf("%f [cm]\r\n", distance);                                // print distance
+		delay_ms(500);
+	}
+}
+
+void TIM2_IRQHandler(void){
+	if(is_UIF(TIM2)){                                                	// Update interrupt
+		ovf_cnt++;												                             	// overflow count
+		clear_UIF(TIM2);  							                              	// clear update interrupt flag
+	}
+	if(is_CCIF(TIM2, 3)){ 								                           	// TIM2_Ch3 (IC3) Capture Flag. Rising Edge Detect
+		time1 = TIM2->CCR3;									                            // Capture TimeStart
+		clear_CCIF(TIM2, 3);                 	                          // clear capture/compare interrupt flag 
+	}								                      
+	else if(is_CCIF(TIM2, 4)){ 								                        // TIM2_Ch3 (IC4) Capture Flag. Falling Edge Detect
+		time2 = TIM2->CCR4 ;										                        // Capture TimeEnd
+		timeInterval = ((time2-time1)+(0xFFFF+1)*ovf_cnt)/100; 					// Total time of echo pulse (10us * counter pulses -> [msec] unit)
+		ovf_cnt = 0;                        	                          // overflow reset	
+		clear_CCIF(TIM2, 4);								                            // clear capture/compare interrupt flag 
+	}
+}
+
+void setup(){
+
+	RCC_PLL_init();                                                   // 84Mhz system clock
+	SysTick_init();                                                   // using sysTick
+	UART2_init();                                                     // for printf
+  
+// PWM configuration ---------------------------------------------------------------------	
+	PWM_t trig;												                                // PWM1 for trig
+	PWM_init(&trig,GPIOA,6,UP,SFAST,PP,EC_NOPUPD,1);			 						// PA_6: Ultrasonic trig pulse
+	PWM_period_us(&trig, 50000);    	                                // PWM of 50ms period. Use period_us()
+	PWM_pulsewidth_us(&trig, 10);   	                                // PWM pulse width of 10us
+	
+	
+// Input Capture configuration -----------------------------------------------------------------------	
+	IC_t echo;												                                // Input Capture for echo
+	ICAP_init(&echo,GPIOB,10,EC_NOPUPD);    		                      // PB10 as input caputre
+	ICAP_counter_us(&echo, 10);   		                                // ICAP counter step time as 10us
+	ICAP_setup(&echo, 3, IC_RISE);                                  	// TIM2_CH3 as IC3 , rising edge detect
+	ICAP_setup(&echo,4,IC_FALL);                                    	// TIM2_CH3 as IC4 , falling edge detect
+	
+}
+
+```
+
+
 
 ### GPIO_DIO_LED
 
