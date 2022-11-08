@@ -49,14 +49,14 @@ void TIM2_IRQHandler(void){
 	}								                      
 	else if(is_CCIF(TIM2, 4)){ 								                        // TIM2_Ch3 (IC4) Capture Flag. Falling Edge Detect
 		time2 = TIM2->CCR4 ;										                        // Capture TimeEnd
-		timeInterval = ((time2-time1)+(0xFFFF+1)*ovf_cnt)/100; 					// Total time of echo pulse (10us * counter pulses -> [msec] unit)
+		if((time2-time1)<(TIM2->ARR+1)&(ovf_cnt==1)) ovf_cnt=0;         // if (time2-time1)< ARR+1 make over count 0
+		timeInterval = ((time2-time1)+(TIM2->ARR+1)*ovf_cnt)/100; 			// Total time of echo pulse (10us * counter pulses -> [msec] unit)
 		ovf_cnt = 0;                        	                          // overflow reset	
 		clear_CCIF(TIM2, 4);								                            // clear capture/compare interrupt flag 
 	}
 }
 
 void setup(){
-
 	RCC_PLL_init();                                                   // 84Mhz system clock
 	SysTick_init();                                                   // using sysTick
 	UART2_init();                                                     // for printf
@@ -73,6 +73,5 @@ void setup(){
 	ICAP_init(&echo,GPIOB,10,EC_NOPUPD);    		                      // PB10 as input caputre
 	ICAP_counter_us(&echo, 10);   		                                // ICAP counter step time as 10us
 	ICAP_setup(&echo, 3, IC_RISE);                                  	// TIM2_CH3 as IC3 , rising edge detect
-	ICAP_setup(&echo,4,IC_FALL);                                    	// TIM2_CH3 as IC4 , falling edge detect
-	
+	ICAP_setup(&echo,4,IC_FALL);                                    	// TIM2_CH3 as IC4 , falling edge detect	
 }
