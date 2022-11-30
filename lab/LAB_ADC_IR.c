@@ -203,18 +203,19 @@ void TIM4_IRQHandler(void){
 		clear_CCIF(TIM4, 1);								                            // clear capture/compare interrupt flag 
 	}
 }
-// ADC interrupt
+// ADC interrupt 
+// read IR sensors
 void ADC_IRQHandler(void){
-	if((is_ADC_OVR())){
+	if((is_ADC_OVR())){                                                // ADC over 
 		clear_ADC_OVR();                                                 //clear adc sr
 	}
 	
 	if(is_ADC_EOC()){                                                  //after finishing sequence
-			if (flag==0){
-				IR1 = ADC_read();
+			if (flag==0){ 
+				IR1 = ADC_read();                                            // read ADC IR1
 			}  
 			else if (flag==1){
-				IR2 = ADC_read();
+				IR2 = ADC_read();                                            // read ADC IR2
 			}
 		flag =! flag;
 	}
