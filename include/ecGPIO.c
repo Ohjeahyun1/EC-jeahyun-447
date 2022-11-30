@@ -1,7 +1,7 @@
 /**
 ******************************************************************************
 * @author  Oh jeahyun
-* @Mod		 2022-10-28  	
+* @Mod		 2022-11-11	
 * @brief   Embedded Controller - ecGPIO.c
 * 
 ******************************************************************************
@@ -13,6 +13,7 @@
 #include "ecGPIO.h"
 
 //volatile int EC_SYSCLK=16000000;
+
 
 
 //GPID port mode register
@@ -93,6 +94,15 @@ void LEDs_toggle(int state){
 			GPIO_write(GPIOA,7,muled[state][2]);
 			GPIO_write(GPIOB,6,muled[state][3]);
 }
+
+void GPIO_all_init(GPIO_TypeDef *Port, int pin, int mode,int pupdr,int otype,int ospeed){     
+	GPIO_init(Port, pin, mode);    
+	GPIO_pupdr(Port,pin, pupdr);    
+	GPIO_otype(Port,pin, otype);             
+	GPIO_ospeed(Port,pin, ospeed);      
+} 
+
+
 
 //4LEDS init,output,Pull-up,medium speed,Push pull
 void LED_init(void){
@@ -337,10 +347,88 @@ void LEDs_test_toggle(int state){
 }
 
 
-//GPIO setting
-typedef struct {
-	GPIO_TypeDef *port;                //example: GPIO_write(extLED[0].port, extLED[0].pin,....);
-  int pin;
-} _Pin;
+
+
+//**********************Quiz1************************
+
+
+
+_Pin LED_quiz1[3] = {
+	{GPIOA, 0},           // binary 4
+	{GPIOA, 1},           // binary 2
+ 	{GPIOB, 0}            // binary 1 
+};
+
+_Pin seven_quiz1[8] = {
+	{GPIOB, 9},           // a
+	{GPIOA, 6},           // b
+	{GPIOA, 7},           // c
+	{GPIOB, 6},           // d
+	{GPIOC, 7},           // e
+	{GPIOA, 9},           // f
+	{GPIOA, 8},           // g
+	{GPIOB, 10}           // dp
+};
+// LED init(output,No pull up and pull down,push pull, medium speed
+void LED_Quiz1(void){
+	int i;
+	GPIO_all_init(GPIOA,LED_PIN,OUTPUT,EC_NOPUPD,PP,SMED);
+for(i=0;i<3;i++){
+	GPIO_all_init(LED_quiz1[i].port,LED_quiz1[i].pin,OUTPUT,EC_NOPUPD,PP,SMED);
+	}
+}
+// seven segment init(output,No pull up and pull down,push pull, medium speed
+void seven_Quiz1(void){
+	int i;
+	  for(i=0;i<8;i++){
+	GPIO_all_init(seven_quiz1[i].port,seven_quiz1[i].pin,OUTPUT,EC_NOPUPD,PP,SMED);
+	}
+}
+//000-111 binary up counter
+void LEDs_Quiz1(int state){
+	//  3 LEDs HIGH,LOW state definition
+	int i;
+	int muled[8][3] ={
+		    //row - led1,led2,led3, col- state 
+                 //led1,led2,led3		
+	                  {0,0,0},          //state zero
+                    {0,0,1},          //state one
+                    {0,1,0},          //state two
+                    {0,1,1},          //state three 
+                    {1,0,0}, 	        //state four
+                    {1,0,1},          //state five 
+                    {1,1,0},          //state six
+                    {1,1,1}           //state seven                 
+  };  
+	    //output of 3 LEDS
+	    for(i=0;i<3;i++){
+	GPIO_write(LED_quiz1[i].port,LED_quiz1[i].pin,muled[state][i]);
+	}
+}
+
+// When button pressed Output 7segment(0~9) in order
+void sevenseg_Quiz1(int number){
+	int i;
+	int seven[11][8] ={
+		//row- number , col - a,b,c,d....DP
+		               //a,b,c,d,e,f,g,DP
+	                  {0,0,0,0,0,0,1,1},          //zero
+                    {1,0,0,1,1,1,1,1},          //one
+                    {0,0,1,0,0,1,0,1},          //two
+                    {0,0,0,0,1,1,0,1},          //three
+                    {1,0,0,1,1,0,0,1},          //four
+                    {0,1,0,0,1,0,0,1},          //five
+                    {0,1,0,0,0,0,0,1},          //six
+                    {0,0,0,1,1,1,1,1},          //seven
+                    {0,0,0,0,0,0,0,1},          //eight
+                    {0,0,0,1,1,0,0,1},          //nine
+                    {0,0,0,0,0,0,1,1}           //dot
+  };
+	//outputs 7segment LEDs				
+	  for(i=0;i<8;i++){
+	GPIO_write(seven_quiz1[i].port,seven_quiz1[i].pin,seven[number][i]);
+	}
+}
+
 
 

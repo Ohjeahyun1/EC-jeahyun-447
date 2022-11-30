@@ -1,7 +1,7 @@
 /**
 ******************************************************************************
 * @author  Oh jeahyun
-* @Mod		 2022-10-28
+* @Mod		 2022-11-11
 * @brief   Embedded Controller:  ecTim.c
 * 
 ******************************************************************************
@@ -152,25 +152,28 @@ void TIM_period_test(TIM_TypeDef* TIMx, uint32_t msec){
 // Update Event Interrupt
 void TIM_INT_init(TIM_TypeDef* timerx, uint32_t msec, int mode){
 // 1. Initialize Timer	
-	TIM_init(timerx,msec,TIM);
+	TIM_init(timerx,msec,mode);
 	
 // 2. Enable Update Interrupt
 	TIM_INT_enable(timerx);
-	
+
 // 3. Timer IRQn	
 	uint32_t IRQn_reg =0;
-	if(timerx ==TIM1)       IRQn_reg = TIM1_UP_TIM10_IRQn;
+	if(timerx ==TIM1)       IRQn_reg = TIM1_UP_TIM10_IRQn; 	
 	else if(timerx ==TIM2)  IRQn_reg = TIM2_IRQn;
 	else if(timerx ==TIM3)  IRQn_reg = TIM3_IRQn;
-	else if(timerx ==TIM4)  IRQn_reg = TIM4_IRQn;
+	else if(timerx ==TIM4)  IRQn_reg = TIM4_IRQn; 
 	else if(timerx ==TIM5)  IRQn_reg = TIM5_IRQn;
 	else if(timerx ==TIM9)  IRQn_reg = TIM1_BRK_TIM9_IRQn;
   else if(timerx ==TIM10)   IRQn_reg = TIM1_UP_TIM10_IRQn;
   else if(timerx ==TIM11)   IRQn_reg = TIM1_TRG_COM_TIM11_IRQn;
-	
+
 	// 4. NVIC setting	
-	NVIC_EnableIRQ(IRQn_reg);				
-	NVIC_SetPriority(IRQn_reg,2);
+	//NVIC_SetPriority(IRQn_reg,3);
+
+  NVIC_EnableIRQ(IRQn_reg);		
+	NVIC_SetPriority(IRQn_reg,3);
+
 }
 
 
@@ -220,7 +223,8 @@ void ICAP_init(IC_t *ICx, GPIO_TypeDef *port, int pin,int pupdr){
 	GPIO_otype(port, pin,PP);  						// PUSH pull
 	GPIO_pupdr(port,pin,pupdr);
 	GPIO_ospeed(port, pin,SHIGH);  						// speed VHIGH=3	
-
+ 
+	 
 // 2. Configure GPIO AFR by Pin num.
 	if(TIMx == TIM1 || TIMx == TIM2)											{
 		port->AFR[pin/8] |= ~(15 << (4*(pin % 8))); // TIM1~2
@@ -234,11 +238,11 @@ void ICAP_init(IC_t *ICx, GPIO_TypeDef *port, int pin,int pupdr){
 		port->AFR[pin/8] |= ~(15 << (4*(pin % 8)));  // TIM9~11
 		port->AFR[pin/8] |= 0x03 << (4*(pin % 8));;  // TIM9~11
 	}
-
-	
+	//printf("13\r\n");
 // TIMER configuration ---------------------------------------------------------------------			
 // 1. Initialize Timer 
 	TIM_init(TIMx, 1,TIM);
+
 // 2. Initialize Timer Interrpt 
 	TIM_INT_init(TIMx, 1,TIM);        					// TIMx Interrupt initialize 
 // 3. Modify ARR Maxium for 1MHz
@@ -248,7 +252,6 @@ void ICAP_init(IC_t *ICx, GPIO_TypeDef *port, int pin,int pupdr){
 	TIMx->CR1 &= ~TIM_CR1_CEN;  						// Disable Counter during configuration
 
 
-	
 // Input Capture configuration ---------------------------------------------------------------------			
 // 1. Select Timer channel(TIx) for Input Capture channel(ICx)
 	// Default Setting
@@ -261,13 +264,12 @@ void ICAP_init(IC_t *ICx, GPIO_TypeDef *port, int pin,int pupdr){
 	TIMx->CCMR2 |= 	TIM_CCMR2_CC3S_0;        				//01<<0   CC3s    TI3=IC3
 	TIMx->CCMR2 |= 	TIM_CCMR2_CC4S_0;  							//01<<8   CC4s    TI4=IC4
 
-
 // 2. Filter Duration (use default)
  // TIMx->CCMR1 &= ~(15<<4);
 // 3. IC Prescaler (use default)
  // TIMx->CCMR1 &= ~(3<<2);
 // 4. Activation Edge: CCyNP/CCyP	
-	TIMx->CCER &= ~(15<<((ICn-1)*4));					// CCy(Rising) for ICn
+	TIMx->CCER &= ~(15<<((ICn-1)*4));					      // CCy(Rising) for ICn
 	//TIMx->CCER |= ~(5<<(ICn+(ICn-1)*3));					// CCy(Rising) for ICn
 
 
@@ -280,6 +282,7 @@ void ICAP_init(IC_t *ICx, GPIO_TypeDef *port, int pin,int pupdr){
 
 // 7.	Enable Counter 
 	TIMx->CR1	 |= TIM_CR1_CEN;							// Counter enable	
+  
 }
 
 
@@ -288,12 +291,10 @@ void ICAP_setup(IC_t *ICx, int ICn, int edge_type){
 	TIM_TypeDef *TIMx = ICx->timer;	// TIMx
 	int 				CHn 	= ICx->ch;		// Timer Channel CHn
 	ICx->ICnum = ICn;
-
 // Disable  CC. Disable CCInterrupt for ICn. 
 	TIMx->CCER &= ~(1<<(ICn-1)*4);															// Capture Disable
 	TIMx->DIER &= ~(1<<ICn);															// CCn Interrupt Disable	
 	TIMx->DIER &= ~(1<<0);															  // Interrupt Disable	
-	
 // Configure  IC number(user selected) with given IC pin(TIMx_CHn)
 	switch(ICn){
 			case 1:
@@ -327,7 +328,7 @@ void ICAP_setup(IC_t *ICx, int ICn, int edge_type){
 		case IC_FALL: TIMx->CCER |= 1<<(ICn+(ICn-1)*3);	 break;     //falling: 01
 		case IC_BOTH: TIMx->CCER |= 5<<(ICn+(ICn-1)*3);	 break;     //both:    11
 	}
-	
+
 // Enable CC. Enable CC Interrupt. 
 	TIMx->CCER |= 1 << (4*(ICn - 1)); 										        // Capture Enable
   TIMx->DIER |= 1 << ICn; 														          // CCn Interrupt enabled		
@@ -377,10 +378,10 @@ void ICAP_pinmap(IC_t *timer_pin){
          case 4 : timer_pin->timer = TIM3; timer_pin->ch = 1; break;
          case 5 : timer_pin->timer = TIM3; timer_pin->ch = 2; break;
          case 6 : timer_pin->timer = TIM4; timer_pin->ch = 1; break;
-         case 7 : timer_pin->timer = TIM4; timer_pin->ch = 2; break;
+         case 7 : timer_pin->timer = TIM4; timer_pin->ch = 2; break; 
          case 8 : timer_pin->timer = TIM4; timer_pin->ch = 3; break;
          case 9 : timer_pin->timer = TIM4; timer_pin->ch = 3; break;
-         case 10: timer_pin->timer = TIM2; timer_pin->ch = 3; break;
+         case 10: timer_pin->timer = TIM2; timer_pin->ch = 3; break;          //modify TIM2
          
          default: break;
       }

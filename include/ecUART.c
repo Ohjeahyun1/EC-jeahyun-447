@@ -1,3 +1,12 @@
+/**
+******************************************************************************
+* @author  Oh jeahyun
+* @Mod		 2022-11-11
+* @brief   Embedded Controller:  ecUART.c
+* 
+******************************************************************************
+*/
+
 #include "ecUART.h"
 #include <math.h>
 
@@ -119,55 +128,59 @@ void USART_delay(uint32_t us) {
 
 
 
-/*
+
 // ********************** EXERCISE***************************
-//
+
 void USART_begin(USART_TypeDef* USARTx, GPIO_TypeDef* GPIO_TX, int pinTX, GPIO_TypeDef* GPIO_RX, int pinRX, int baud){
 //1. GPIO Pin for TX and RX	
 	// Enable GPIO peripheral clock 	 
 	// Alternative Function mode selection for Pin_y in GPIOx
 	GPIO_init(GPIO_TX, pinTX, AF);											// GPIO mode setting : AF 
 	GPIO_init(GPIO_RX, pinRX, AF);											// GPIO mode setting : AF
+	GPIO_otype(GPIO_TX, pinTX, PP);											// GPIO mode setting : AF 
+	GPIO_otype(GPIO_RX, pinRX, PP);											// GPIO mode setting : AF
+	GPIO_ospeed(GPIO_TX, pinTX, SHIGH);											// GPIO mode setting : AF 
+	GPIO_ospeed(GPIO_RX, pinRX, SHIGH);											// GPIO mode setting : AF
+	GPIO_pupdr(GPIO_TX, pinTX, EC_NOPUPD);
+	GPIO_pupdr(GPIO_RX, pinRX, EC_NOPUPD);
 	
 	// Set Alternative Function Register for USARTx.	
 	// AF7 - USART1,2 AF8 - USART6 
 	if (USARTx == USART6){ 
 		// USART_TX GPIO AFR
 		if (pinTX < 8) GPIO_TX->AFR[0] |= 8 << (4*pinTX);
-		else ________________________________________; 			
+		else GPIO_TX->AFR[1] |= 8 << (4*(pinTX%8)); 			
 		// USART_RX GPIO AFR
-		if (pinRX < 8) _______________________________________;  	 	 
-		else _______________________________________;  			
+		if (pinRX < 8) GPIO_RX->AFR[0] |= 8 << (4*pinRX);  	 	 
+		else GPIO_RX->AFR[1] |= 8 << (4*(pinRX%8));  			
 	}
 	else{	//USART1,USART2
 		// USART_TX GPIO AFR
-		if (pinTX < 8) _______________________________________;  	 	 
-		else _______________________________________;  			 
+		if (pinTX < 8) GPIO_TX->AFR[0] |= 7 << (4*pinTX);  	 	 
+		else GPIO_TX->AFR[1] |= 7 << (4*(pinTX%8));   			 
 		// USART_RX GPIO AFR
-		if (pinRX < 8) _______________________________________;  	
-		else _______________________________________;  			
+		if (pinRX < 8) GPIO_RX->AFR[0] |= 7 << (4*pinRX);  	
+		else GPIO_RX->AFR[1] |= 7 << (4*(pinRX%8));  			
 	}
-	// No pull up, No pull down 
-  GPIO_pupdr(GPIO_TX, pinTX, EC_NONE);
-	GPIO_pupdr(GPIO_RX, pinRX, EC_NONE);
+
 	
 	
 //2. USARTx (x=2,1,6) configuration	
 	// Enable USART peripheral clock 
 	if (USARTx == USART1)
-		_______________________________________; 	// Enable USART 1 clock (APB2 clock: AHB clock = 84MHz)	
+		RCC->APB2ENR |= RCC_APB2ENR_USART1EN; 	// Enable USART 1 clock (APB2 clock: AHB clock = 84MHz)	
 	else if(USARTx == USART2)
 		RCC->APB1ENR |= RCC_APB1ENR_USART2EN;  		// Enable USART 2 clock (APB1 clock: AHB clock/2 = 42MHz)
 	else
-		_______________________________________;  // Enable USART 6 clock (APB2 clock: AHB clock = 84MHz)
+		RCC->APB2ENR |= RCC_APB2ENR_USART6EN;  // Enable USART 6 clock (APB2 clock: AHB clock = 84MHz)
 	
 	// Disable USARTx. 
 	USARTx->CR1  &= ~USART_CR1_UE; 							// USART disable
 	 
 	// No Parity / 8-bit word length / Oversampling x16 
-	USARTx->CR1 _______________________________________;   	// No parrity bit
-	USARTx->CR1 _______________________________________;    // M: 0 = 8 data bits, 1 start bit    
-	USARTx->CR1 _______________________________________;  	// 0 = oversampling by 16 (to reduce RF noise)	 
+	USARTx->CR1 &=~(1<<10);   	// No parrity bit
+	USARTx->CR1 &=~(1<<12);    // M: 0 = 8 data bits, 1 start bit    
+	USARTx->CR1 &=~(1<<15);  	// 0 = oversampling by 16 (to reduce RF noise)	 
 	// Configure Stop bit
 	USARTx->CR2 &= ~USART_CR2_STOP;  	// 1 stop bit																 
 
@@ -180,23 +193,26 @@ void USART_begin(USART_TypeDef* USARTx, GPIO_TypeDef* GPIO_TX, int pinTX, GPIO_T
 	float Hz = 84000000; 									// if(USARTx==USART1 || USARTx==USART6)
 	if(USARTx == USART2) Hz = 42000000;
 
-	float USARTDIV = _______________________________________;
-	// YOUR CODE GOES HERE
-	// YOUR CODE GOES HERE
-	// YOUR CODE GOES HERE
-	USARTx->BRR  |= _______________________________________;
+  float USARTDIV = (float)Hz/16/9600;
+	uint32_t MNT = (uint32_t)USARTDIV;
+	uint32_t FRC = round((USARTDIV - MNT) * 16);
+	if (FRC > 15) {
+		MNT += 1;
+		FRC = 0;
+	}
+	USARTx->BRR  |= (MNT << 4) | FRC;
 	
 	// Enable TX, RX, and USARTx 
-	USARTx->CR1  _______________________________________;   	// Transmitter and Receiver enable
-	USARTx->CR1  _______________________________________; 		// USART enable
+	USARTx->CR1  |=3<<2;   	// Transmitter and Receiver enable
+	USARTx->CR1  |=1<<13; 		// USART enable
 	
 	
 // 3. Read USARTx Data (Interrupt)	
 	// Set the priority and enable interrupt
-	USARTx->CR1 _______________________________________;      // Received Data Ready to be Read Interrupt
+	USARTx->CR1 |= USART_CR1_RXNEIE;      // Received Data Ready to be Read Interrupt
 	if (USARTx == USART1){
-		_______________________________________;      					// Set Priority to 1
-		_______________________________________;    						// Enable interrupt of USART2 peripheral
+		NVIC_SetPriority(USART1_IRQn,1);      					// Set Priority to 1
+		NVIC_EnableIRQ(USART1_IRQn);    						// Enable interrupt of USART2 peripheral
 	}
 	else if (USARTx==USART2){
 		NVIC_SetPriority(USART2_IRQn, 1);      		// Set Priority to 1
@@ -206,9 +222,9 @@ void USART_begin(USART_TypeDef* USARTx, GPIO_TypeDef* GPIO_TX, int pinTX, GPIO_T
 		NVIC_SetPriority(USART6_IRQn, 1);      		// Set Priority to 1
 		NVIC_EnableIRQ(USART6_IRQn);            	// Enable interrupt of USART2 peripheral
 	}
-	USARTx->CR1 _______________________________________; 							// USART enable
+	USARTx->CR1 |= 1<<13; 							// USART enable
 } 
-*/
+
 
 void USART_init(USART_TypeDef* USARTx, int baud){
 // **********************************************************
@@ -241,10 +257,9 @@ void USART_init(USART_TypeDef* USARTx, int baud){
 		pinTX = 11;
 		pinRX = 12;
 	}
-	// if for other USART input?
 	
 	// USART_begin() 
-	//USART_begin(USARTx, GPIO_TX, pinTX, GPIO_RX, pinRX, baud);
+	USART_begin(USARTx, GPIO_TX, pinTX, GPIO_RX, pinRX, baud);
 }
 
 

@@ -2,7 +2,7 @@
 @ Embedded Controller by Young-Keun Kim - Handong Global University
 Author           : Oh jeahyun
 Created          : 05-03-2021
-Modified         : 10-19-2022
+Modified         : 11-11-2022
 Language/ver     : C++ in Keil uVision
 
 Description      : Distributed to Students for LAB_GPIO
@@ -57,6 +57,7 @@ void GPIO_mode(GPIO_TypeDef* Port, int pin, int mode);
 void GPIO_ospeed(GPIO_TypeDef* Port, int pin, int speed);
 void GPIO_otype(GPIO_TypeDef* Port, int pin, int type);
 void GPIO_pupdr(GPIO_TypeDef* Port, int pin, int pupdr);
+void GPIO_all_init(GPIO_TypeDef *Port, int pin, int mode,int pupdr,int otype,int ospeed);
 void LED_test_init(void);
 void LEDs_test_toggle(int state);
 void sevenseg_test_init(void);
@@ -70,6 +71,16 @@ void LED_init(void);
 void LEDs_toggle(int state);
 void LED_toggle(void);
 
+void LED_Quiz1(void);
+void seven_Quiz1(void);
+void LEDs_Quiz1(int state);
+void sevenseg_Quiz1(int number);
+
+//GPIO setting
+typedef struct {
+	GPIO_TypeDef *port;                //example: GPIO_write(extLED[0].port, extLED[0].pin,....);
+  int pin;
+} _Pin;
 
 
 

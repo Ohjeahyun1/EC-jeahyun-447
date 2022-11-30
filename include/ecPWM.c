@@ -25,9 +25,9 @@ void PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin, int DIR,int speed,int oty
 
 // 1. Initialize GPIO port and pin as AF
 		GPIO_init(port, pin, AF);  // AF=2
-	  GPIO_otype(port,pin,otype); //otype
-	  GPIO_pupdr(port,pin,pupdr); //pupdr
-	  GPIO_ospeed(port, pin,speed);  // speed 
+	  GPIO_otype(port,pin,otype); //otype  (PP)
+	  GPIO_pupdr(port,pin,pupdr); //pupdr  (PULL-UP)
+	  GPIO_ospeed(port, pin,speed);  // speed (SFAST)
 	
    int AFN = 0;
 		if(TIMx ==TIM1) AFN = 1;
