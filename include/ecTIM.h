@@ -31,6 +31,7 @@ void TIM_init(TIM_TypeDef *timerx, uint32_t msec,int mode);     //Timer initliza
 
 void TIM_period_ms(TIM_TypeDef* TIMx, uint32_t msec);           //Timer period setting ms
 void TIM_period_ms_PWM(TIM_TypeDef* TIMx, uint32_t msec);       //Timer period setting PWM
+void TIM_period_ms_PWM_buzzer(TIM_TypeDef* TIMx, uint32_t msec);
 void TIM_period_us(TIM_TypeDef* TIMx, uint32_t msec);           //Timer period setting us
 void TIM_period_test(TIM_TypeDef* TIMx, uint32_t msec);         //Timer period setting ms for test
 

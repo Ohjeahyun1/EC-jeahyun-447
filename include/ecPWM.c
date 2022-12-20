@@ -100,6 +100,13 @@ void PWM_period_ms(PWM_t *PWM_pin, uint32_t msec){
 	TIM_TypeDef *TIMx = PWM_pin->timer;
 	TIM_period_ms_PWM(TIMx,msec);   
 }
+// set PWM period ms
+void PWM_period_ms_buzzer(PWM_t *PWM_pin, uint32_t msec){
+	TIM_TypeDef *TIMx = PWM_pin->timer;
+	TIM_period_ms_PWM_buzzer(TIMx,msec);   
+}
+
+
 // set PWM period us
 void PWM_period_us(PWM_t *PWM_pin, uint32_t usec){
 	TIM_TypeDef *TIMx = PWM_pin->timer;

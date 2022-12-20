@@ -41,6 +41,7 @@ void PWM_init(PWM_t *pwm, GPIO_TypeDef *port, int pin,int DIR,int speed,int otyp
 
 // allowable range for msec:  1~2,000
 void PWM_period_ms(PWM_t *pwm,  uint32_t msec);		
+void PWM_period_ms_buzzer(PWM_t *PWM_pin, uint32_t msec);
 // allowable range for usec:  1~1,000
 void PWM_period_us(PWM_t *PWM_pin, uint32_t usec);  
 

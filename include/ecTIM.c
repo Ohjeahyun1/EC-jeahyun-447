@@ -107,6 +107,38 @@ void TIM_period_ms(TIM_TypeDef* TIMx, uint32_t msec){
 					
 }
 
+void TIM_period_ms_PWM_buzzer(TIM_TypeDef* TIMx, uint32_t msec){ 
+	// Period msec = 1 to 6000
+	//16bit 0-65000
+	//32bit 0-294,967,295
+	// 0.1ms(10kHz, ARR=1) to 6.5sec (ARR=0xFFFF)
+//	uint32_t prescaler = 840; // 10kHz -> 0.1ms
+//  uint16_t ARRval= 100; // 84MHz/1000ms  
+	
+	uint16_t prescaler;
+	uint32_t Sys_CLK;                                           //system clock
+	
+	if((RCC->CFGR & RCC_CFGR_SW_PLL) ==RCC_CFGR_SW_PLL)     {   //PLL clock
+		Sys_CLK = 84000000;                                       
+}  else if((RCC->CFGR & RCC_CFGR_SW_HSI) ==RCC_CFGR_SW_HSI)	 {//HSI clock
+		Sys_CLK = 16000000;
+}
+	
+	if(TIMx == TIM2 || TIM == TIM5){	
+  prescaler = 840000;                           // PSC = 840 ->  10ms
+	uint32_t ARRval= msec; // 84MHz/1000ms  
+	TIMx->PSC = prescaler-1;					
+	TIMx->ARR = ARRval-1;			
+		
+	}else{
+  prescaler = 840000;                           // PSC = 840 ->  10ms
+	uint16_t ARRval= msec;  // 84MHz/1000ms  
+	TIMx->PSC = prescaler - 1;					
+	TIMx->ARR = ARRval-1;	
+	}				
+}
+
+
 void TIM_period_ms_PWM(TIM_TypeDef* TIMx, uint32_t msec){ 
 	// Period msec = 1 to 6000
 	//16bit 0-65000
@@ -131,8 +163,8 @@ void TIM_period_ms_PWM(TIM_TypeDef* TIMx, uint32_t msec){
 	TIMx->ARR = ARRval-1;			
 		
 	}else{
-  prescaler = (Sys_CLK/10000);                           // PSC = 840 ->  10ms
-	uint16_t ARRval=((Sys_CLK/10000)/prescaler*msec*100);  // 84MHz/1000ms  
+  prescaler = (Sys_CLK/100000);                           // PSC = 840 ->  10ms
+	uint16_t ARRval=((Sys_CLK/100000)/prescaler*msec*100);  // 84MHz/1000ms  
 	TIMx->PSC = prescaler - 1;					
 	TIMx->ARR = ARRval-1;	
 	}				
@@ -381,7 +413,7 @@ void ICAP_pinmap(IC_t *timer_pin){
          case 7 : timer_pin->timer = TIM4; timer_pin->ch = 2; break; 
          case 8 : timer_pin->timer = TIM4; timer_pin->ch = 3; break;
          case 9 : timer_pin->timer = TIM4; timer_pin->ch = 3; break;
-         case 10: timer_pin->timer = TIM2; timer_pin->ch = 3; break;          //modify TIM2
+         case 10: timer_pin->timer = TIM2; timer_pin->ch = 3; break;          
          
          default: break;
       }
